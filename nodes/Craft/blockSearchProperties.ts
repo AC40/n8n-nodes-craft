@@ -20,19 +20,29 @@ export const blockSearchProperties: INodeProperties[] = [
 		default: {},
 		displayOptions: { show: display },
 		options: [
-			{ displayName: 'Case Sensitive', name: 'caseSensitive', type: 'boolean', default: false },
+			{
+				displayName: 'Case Sensitive',
+				name: 'caseSensitive',
+				description: 'Whether the search should be case sensitive.',
+				type: 'boolean',
+				default: false,
+			},
 			{
 				displayName: 'Before Block Count',
 				name: 'beforeBlockCount',
 				type: 'number',
-				default: 0,
+				default: 5,
+				description:
+					'The number of additional blocks that are returned before the matched block. Defaults to 5.',
 				typeOptions: { minValue: 0 },
 			},
 			{
 				displayName: 'After Block Count',
 				name: 'afterBlockCount',
 				type: 'number',
-				default: 0,
+				default: 5,
+				description:
+					'The number of additional blocks that are returned after the matched block. Defaults to 5.',
 				typeOptions: { minValue: 0 },
 			},
 		],

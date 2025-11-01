@@ -18,6 +18,7 @@ export class Craft implements INodeType {
 		icon: { light: 'file:craft_logo_original.svg', dark: 'file:craft_logo_light.svg' },
 		group: ['transform'],
 		version: 1,
+		defaultVersion: 1.1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Interact with your Craft documents via the API',
 		defaults: { name: 'Craft' },
