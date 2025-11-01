@@ -244,8 +244,18 @@ export class Craft implements INodeType {
 				}
 
 				if (operation === 'delete') {
-					const parameters = this.getNodeParameter('deleteParameters', index, {}) as IDataObject;
-					const ids = ensureArray(parameters.blockIds as string[] | string | undefined);
+					const inputMode = this.getNodeParameter('deleteInputMode', index, 'form') as string;
+					let ids: string[] = [];
+
+					if (inputMode === 'json') {
+						const blockIdsParam = this.getNodeParameter('blockIdsJson', index);
+						const parsedIds = parseParameter<string[]>(blockIdsParam);
+						ids = parsedIds || [];
+					} else {
+						const parameters = this.getNodeParameter('deleteParameters', index, {}) as IDataObject;
+						ids = ensureArray(parameters.blockIds as string[] | string | undefined);
+					}
+
 					if (!ids.length)
 						throw new NodeApiError(
 							this.getNode(),

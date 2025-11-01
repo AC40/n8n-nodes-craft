@@ -9,6 +9,7 @@ export const blockMutationProperties: INodeProperties[] = [
 		displayName: 'Blocks',
 		name: 'blocks',
 		type: 'json',
+		noDataExpression: false,
 		default: '[]',
 		required: true,
 		description: 'Array of block objects to create',
@@ -62,12 +63,46 @@ export const blockMutationProperties: INodeProperties[] = [
 		displayOptions: show('update'),
 	},
 	{
+		displayName: 'Input Mode',
+		name: 'deleteInputMode',
+		type: 'options',
+		options: [
+			{ name: 'JSON', value: 'json' },
+			{ name: 'Form', value: 'form' },
+		],
+		default: 'form',
+		description:
+			'Choose how to input block IDs: JSON for direct editing or Form for structured input',
+		displayOptions: show('delete'),
+	},
+	{
+		displayName: 'Block IDs',
+		name: 'blockIdsJson',
+		type: 'json',
+		default: '[]',
+		required: true,
+		description: 'Array of block IDs to delete (e.g., ["id1", "id2"])',
+		displayOptions: {
+			show: {
+				resource: ['block'],
+				operation: ['delete'],
+				deleteInputMode: ['json'],
+			},
+		},
+	},
+	{
 		displayName: 'Delete Parameters',
 		name: 'deleteParameters',
 		type: 'collection',
 		placeholder: 'Add delete details',
 		default: {},
-		displayOptions: show('delete'),
+		displayOptions: {
+			show: {
+				resource: ['block'],
+				operation: ['delete'],
+				deleteInputMode: ['form'],
+			},
+		},
 		options: [
 			{
 				displayName: 'Block IDs',
