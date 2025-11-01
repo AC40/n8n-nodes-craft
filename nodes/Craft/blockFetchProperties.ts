@@ -42,7 +42,7 @@ export const blockFetchProperties: INodeProperties[] = [
 				name: 'fetchMetadata',
 				type: 'boolean',
 				default: false,
-				description: 'Include metadata such as created and updated timestamps.',
+				description: 'Whether to include metadata such as created and updated timestamps',
 			},
 		],
 	},

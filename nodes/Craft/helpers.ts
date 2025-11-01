@@ -52,6 +52,9 @@ export async function craftApiRequest(
 		delete options.body;
 		delete (options.headers as IDataObject)['Content-Type'];
 	}
-	if (credential) return this.helpers.requestWithAuthentication.call(this, 'CraftApi', options);
+	if (credential)
+		return this.helpers.httpRequestWithAuthentication.call(this, 'craftApi', {
+			...options,
+		});
 	return this.helpers.httpRequest.call(this, options);
 }

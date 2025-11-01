@@ -1,6 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { blockFetchProperties } from './blockFetchProperties';
 import { blockMutationProperties } from './blockMutationProperties';
+import { blockUploadProperties } from './blockUploadProperties';
 import { blockSearchProperties } from './blockSearchProperties';
 
 const documentPropery: INodeProperties = {
@@ -9,7 +10,7 @@ const documentPropery: INodeProperties = {
 	type: 'string',
 	default: '',
 	description:
-		'ID of the document to fetch. Usually a 11 char string. Can be found by takting the part between "https://connect.craft.do/link/" and "/docs/v1"',
+		'ID of the document to work with. Usually an 11-character string between "https://connect.craft.do/link/" and "/docs/v1".',
 	required: true,
 };
 
@@ -25,6 +26,12 @@ const resourceProperty: INodeProperties = {
 const operations: Array<[value: string, name: string, action: string, description: string]> = [
 	['fetch', 'Fetch Block', 'Fetch a block', 'Retrieve block content via GET /blocks'],
 	['insert', 'Insert Blocks', 'Insert blocks', 'Create blocks via POST /blocks'],
+	[
+		'upload',
+		'Upload File',
+		'Upload a file',
+		'Upload binary content via the Craft upload-link flow',
+	],
 	['delete', 'Delete Blocks', 'Delete blocks', 'Remove blocks via DELETE /blocks'],
 	['update', 'Update Blocks', 'Update blocks', 'Modify blocks via PUT /blocks'],
 	['move', 'Move Blocks', 'Move blocks', 'Reorder blocks via PUT /blocks/move'],
@@ -52,5 +59,6 @@ export const craftProperties: INodeProperties[] = [
 	operationProperty,
 	...blockFetchProperties,
 	...blockMutationProperties,
+	...blockUploadProperties,
 	...blockSearchProperties,
 ];
