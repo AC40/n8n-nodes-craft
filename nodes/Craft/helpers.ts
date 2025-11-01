@@ -28,17 +28,31 @@ export const pushResult = (collector: IDataObject[], data: unknown, fallback = '
 	}
 };
 
-export async function craftApiRequest(
-	this: IExecuteFunctions,
-	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
-	method: IHttpRequestMethods,
-	endpoint: string,
-	body: IDataObject = {},
-	qs: IDataObject = {},
-	headers: IDataObject = {},
-	json = true,
-) {
+type CraftApiRequestOptions = {
+	_this: IExecuteFunctions;
+	credential: ICredentialDataDecryptedObject | null;
+	documentId: string;
+	method: IHttpRequestMethods;
+	endpoint: string;
+	body: IDataObject;
+	qs: IDataObject;
+	headers: IDataObject;
+	json: boolean;
+};
+
+export async function craftApiRequest({
+	// 'this' is a reserved word; use '_this' instead
+	// or use destructuring alias if you want to keep 'this'
+	_this,
+	credential,
+	documentId,
+	method,
+	endpoint,
+	body,
+	qs,
+	headers,
+	json,
+}: CraftApiRequestOptions) {
 	const options: IHttpRequestOptions = {
 		method,
 		url: `${buildBaseUrl(documentId)}${endpoint}`,
@@ -53,8 +67,20 @@ export async function craftApiRequest(
 		delete (options.headers as IDataObject)['Content-Type'];
 	}
 	if (credential)
-		return this.helpers.httpRequestWithAuthentication.call(this, 'craftApi', {
+		return _this.helpers.httpRequestWithAuthentication.call(_this, 'craftApi', {
 			...options,
 		});
-	return this.helpers.httpRequest.call(this, options);
+	return _this.helpers.httpRequest.call(_this, options);
 }
+
+export const parseParameter = <T>(param: any): T | null => {
+	if (typeof param === 'string') {
+		try {
+			return JSON.parse(param) as T;
+		} catch (error) {
+			console.error('Error parsing parameter', error);
+			return null;
+		}
+	}
+	return (param as T) || null;
+};

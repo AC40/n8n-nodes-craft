@@ -8,7 +8,7 @@ import type {
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 import { craftProperties } from './descriptions';
-import { craftApiRequest, ensureArray, pushResult } from './helpers';
+import { craftApiRequest, ensureArray, parseParameter, pushResult } from './helpers';
 import { fileTypeFromBuffer } from 'file-type';
 
 export class Craft implements INodeType {
@@ -43,26 +43,31 @@ export class Craft implements INodeType {
 
 				if (operation === 'fetch') {
 					const blockId = this.getNodeParameter('blockId', index, '') as string;
-					const options = this.getNodeParameter('fetchOptions', index, {}) as IDataObject;
-					const outputFormat = (options.outputFormat as string) || 'json';
-					const maxDepth = (options.maxDepth as number) ?? -1;
-					const fetchMetadata = !!options.fetchMetadata;
+					const optionsParam = this.getNodeParameter('fetchOptions', index, {});
+					const options = parseParameter<IDataObject>(optionsParam);
+
+					const outputFormat = (options?.outputFormat as string) || 'json';
+					const maxDepth = options?.maxDepth as number;
+					const fetchMetadata = options?.fetchMetadata === true;
+
+					// Construct the query string parameters
 					const qs: IDataObject = {};
 					if (blockId) qs.id = blockId;
 					if (maxDepth !== -1) qs.maxDepth = maxDepth;
 					if (fetchMetadata) qs.fetchMetadata = true;
+
 					const accept = outputFormat === 'markdown' ? 'text/markdown' : 'application/json';
-					const response = await craftApiRequest.call(
-						this,
+					const response = await craftApiRequest({
+						_this: this,
 						credential,
 						documentId,
-						'GET',
-						'/blocks',
-						{},
+						method: 'GET',
+						endpoint: '/blocks',
+						body: {},
 						qs,
-						{ Accept: accept },
-						accept !== 'text/markdown',
-					);
+						headers: { Accept: accept },
+						json: accept !== 'text/markdown',
+					});
 					pushResult(
 						returnData,
 						outputFormat === 'markdown' ? { markdown: response as string } : response,
@@ -71,16 +76,19 @@ export class Craft implements INodeType {
 				}
 
 				if (operation === 'insert') {
-					const blocks = this.getNodeParameter('blocks', index) as IDataObject[];
+					const blocksParam = this.getNodeParameter('blocks', index);
+					const blocks = parseParameter<IDataObject[]>(blocksParam) ?? [];
+
 					const position = this.getNodeParameter('insertPosition', index, {}) as IDataObject;
 					const type = (position.type as string) || 'end';
-					const response = await craftApiRequest.call(
-						this,
+					console.log('type', type);
+					const response = await craftApiRequest({
+						_this: this,
 						credential,
 						documentId,
-						'POST',
-						'/blocks',
-						{
+						method: 'POST',
+						endpoint: '/blocks',
+						body: {
 							blocks,
 							position: {
 								position: type,
@@ -89,7 +97,10 @@ export class Craft implements INodeType {
 									: { siblingId: position.siblingId }),
 							},
 						},
-					);
+						qs: {},
+						headers: {},
+						json: true,
+					});
 					pushResult(returnData, response);
 					continue;
 				}
@@ -126,17 +137,20 @@ export class Craft implements INodeType {
 						overrideMimeType ||
 						(await fileTypeFromBuffer(binaryData))?.mime ||
 						'application/octet-stream';
-					const uploadLink = (await craftApiRequest.call(
-						this,
+					const uploadLink = (await craftApiRequest({
+						_this: this,
 						credential,
 						documentId,
-						'POST',
-						'/upload-link',
-						{
+						method: 'POST',
+						endpoint: '/upload-link',
+						body: {
 							fileName,
 							mimeType,
 						},
-					)) as IDataObject;
+						qs: {},
+						headers: {},
+						json: true,
+					})) as IDataObject;
 
 					const uploadUrl = uploadLink.uploadUrl as string | undefined;
 					const rawUrl = uploadLink.rawUrl as string | undefined;
@@ -149,11 +163,6 @@ export class Craft implements INodeType {
 							{ itemIndex: index },
 						);
 					}
-
-					console.log('uploadUrl', uploadUrl);
-					console.log('uploadMethod', uploadMethod);
-					console.log('mimeType', mimeType);
-					console.log('binaryData.byteLength', binaryData.byteLength);
 
 					const uploadResponse = await this.helpers.httpRequest({
 						method: uploadMethod,
@@ -190,33 +199,40 @@ export class Craft implements INodeType {
 						}
 					}
 
-					const response = await craftApiRequest.call(
-						this,
+					const response = await craftApiRequest({
+						_this: this,
 						credential,
 						documentId,
-						'POST',
-						'/blocks',
-						{
+						method: 'POST',
+						endpoint: '/blocks',
+						body: {
 							blocks: [blockPayload],
 							position: positionPayload,
 						},
-					);
+						qs: {},
+						headers: {},
+						json: true,
+					});
 					pushResult(returnData, response);
 					continue;
 				}
 
 				if (operation === 'update') {
-					const updatedBlocks = this.getNodeParameter('updatedBlocks', index) as IDataObject[];
-					const response = await craftApiRequest.call(
-						this,
+					const updatedBlocksParam = this.getNodeParameter('updatedBlocks', index);
+					const updatedBlocks = parseParameter<IDataObject[]>(updatedBlocksParam) ?? [];
+					const response = await craftApiRequest({
+						_this: this,
 						credential,
 						documentId,
-						'PUT',
-						'/blocks',
-						{
+						method: 'PUT',
+						endpoint: '/blocks',
+						body: {
 							blocks: updatedBlocks,
 						},
-					);
+						qs: {},
+						headers: {},
+						json: true,
+					});
 					pushResult(returnData, response);
 					continue;
 				}
@@ -230,16 +246,19 @@ export class Craft implements INodeType {
 							{ message: 'Please supply at least one block ID.' },
 							{ itemIndex: index },
 						);
-					const response = await craftApiRequest.call(
-						this,
+					const response = await craftApiRequest({
+						_this: this,
 						credential,
 						documentId,
-						'DELETE',
-						'/blocks',
-						{
+						method: 'DELETE',
+						endpoint: '/blocks',
+						body: {
 							blockIds: ids,
 						},
-					);
+						qs: {},
+						headers: {},
+						json: true,
+					});
 					pushResult(returnData, response, 'id');
 					continue;
 				}
@@ -254,13 +273,13 @@ export class Craft implements INodeType {
 							{ itemIndex: index },
 						);
 					const type = (parameters.positionType as string) || 'after';
-					const response = await craftApiRequest.call(
-						this,
+					const response = await craftApiRequest({
+						_this: this,
 						credential,
 						documentId,
-						'PUT',
-						'/blocks/move',
-						{
+						method: 'PUT',
+						endpoint: '/blocks/move',
+						body: {
 							blockIds: ids,
 							position: {
 								position: type,
@@ -269,7 +288,10 @@ export class Craft implements INodeType {
 									: { siblingId: parameters.siblingId }),
 							},
 						},
-					);
+						qs: {},
+						headers: {},
+						json: true,
+					});
 					pushResult(returnData, response, 'id');
 					continue;
 				}
@@ -281,15 +303,17 @@ export class Craft implements INodeType {
 					if (options.caseSensitive) qs.caseSensitive = true;
 					if (options.beforeBlockCount) qs.beforeBlockCount = options.beforeBlockCount;
 					if (options.afterBlockCount) qs.afterBlockCount = options.afterBlockCount;
-					const response = await craftApiRequest.call(
-						this,
+					const response = await craftApiRequest({
+						_this: this,
 						credential,
 						documentId,
-						'GET',
-						'/blocks/search',
-						{},
+						method: 'GET',
+						endpoint: '/blocks/search',
+						body: {},
 						qs,
-					);
+						headers: {},
+						json: true,
+					});
 					pushResult(returnData, response);
 				}
 			} catch (error) {
