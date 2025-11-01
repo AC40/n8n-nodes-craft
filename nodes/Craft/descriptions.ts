@@ -3,6 +3,16 @@ import { blockFetchProperties } from './blockFetchProperties';
 import { blockMutationProperties } from './blockMutationProperties';
 import { blockSearchProperties } from './blockSearchProperties';
 
+const documentPropery: INodeProperties = {
+	displayName: 'Document',
+	name: 'documentId',
+	type: 'string',
+	default: '',
+	description:
+		'ID of the document to fetch. Usually a 11 char string. Can be found by takting the part between "https://connect.craft.do/link/" and "/docs/v1"',
+	displayOptions: { show: { resource: ['document'] } },
+};
+
 const resourceProperty: INodeProperties = {
 	displayName: 'Resource',
 	name: 'resource',
@@ -37,6 +47,7 @@ const operationProperty: INodeProperties = {
 };
 
 export const craftProperties: INodeProperties[] = [
+	documentPropery,
 	resourceProperty,
 	operationProperty,
 	...blockFetchProperties,

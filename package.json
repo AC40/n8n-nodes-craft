@@ -37,7 +37,7 @@
 		"nodes": [
 			"dist/nodes/GithubIssues/GithubIssues.node.js",
 			"dist/nodes/Example/Example.node.js",
-			"dist/nodes/GetCraftBlock/GetCraftBlock.node.js"
+			"dist/nodes/Craft/Craft.node.js"
 		]
 	},
 	"devDependencies": {

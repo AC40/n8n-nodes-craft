@@ -9,16 +9,16 @@ import { NodeApiError } from 'n8n-workflow';
 import { craftProperties } from './descriptions';
 import { craftApiRequest, ensureArray, pushResult } from './helpers';
 
-export class GetCraftBlock implements INodeType {
+export class Craft implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Craft AI Inbox',
-		name: 'craftAiInbox',
+		displayName: 'Craft',
+		name: 'craft',
 		icon: { light: 'file:craft_logo_original.svg', dark: 'file:craft_logo_light.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Interact with the Craft AI Inbox API',
-		defaults: { name: 'Craft AI Inbox' },
+		description: 'Interact with your Craft documents via the API',
+		defaults: { name: 'Craft' },
 		inputs: ['main'],
 		outputs: ['main'],
 		credentials: [{ name: 'CraftApi', required: false }],
