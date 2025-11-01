@@ -1,139 +1,155 @@
-import type { INodeType, INodeTypeDescription } from 'n8n-workflow';
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	INodeExecutionData,
+	INodeType,
+	INodeTypeDescription,
+} from 'n8n-workflow';
+import { NodeApiError } from 'n8n-workflow';
+import { craftProperties } from './descriptions';
+import { craftApiRequest, ensureArray, pushResult } from './helpers';
 
 export class GetCraftBlock implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Craft',
-		name: 'getCraftBlock',
-		icon: 'file:craft_logo_original.svg',
+		displayName: 'Craft AI Inbox',
+		name: 'craftAiInbox',
+		icon: { light: 'file:craft_logo_original.svg', dark: 'file:craft_logo_light.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Interact with the Craft API',
-		defaults: {
-			name: 'Craft',
-		},
+		description: 'Interact with the Craft AI Inbox API',
+		defaults: { name: 'Craft AI Inbox' },
 		inputs: ['main'],
 		outputs: ['main'],
-		credentials: [
-			{
-				name: 'CraftApi',
-				required: false,
-			},
-		],
+		credentials: [{ name: 'CraftApi', required: false }],
 		documentationUrl: 'https://docs.n8n.io/integrations/custom-nodes/',
-		requestDefaults: {
-			baseURL: 'https://connect.craft.do/links/GogouBnj9Cj/api/v1',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json',
-			},
-		},
-		properties: [
-			{
-				displayName: 'Resource',
-				name: 'resource',
-				type: 'options',
-				noDataExpression: true,
-				options: [
-					{
-						name: 'Block',
-						value: 'block',
-					},
-				],
-				default: 'block',
-				required: true,
-			},
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: {
-					show: {
-						resource: ['block'],
-					},
-				},
-				options: [
-					{
-						name: 'Get',
-						value: 'get',
-						action: 'Get a block',
-						description: 'Retrieve a Craft block by ID',
-						routing: {
-							request: {
-								method: 'GET',
-								url: '/blocks',
-							},
-						},
-					},
-				],
-				default: 'get',
-				required: true,
-			},
-			{
-				displayName: 'Block ID',
-				name: 'blockId',
-				type: 'string',
-				default: '',
-				required: true,
-				description: 'ID of the block to fetch',
-				displayOptions: {
-					show: {
-						resource: ['block'],
-						operation: ['get'],
-					},
-				},
-				routing: {
-					request: {
-						qs: {
-							id: '={{ $value }}',
-						},
-					},
-				},
-			},
-			{
-				displayName: 'Max Depth',
-				name: 'maxDepth',
-				type: 'number',
-				default: -1,
-				description: 'Maximum depth of descendants to fetch. Use -1 to fetch all levels.',
-				typeOptions: {
-					minValue: -1,
-				},
-				displayOptions: {
-					show: {
-						resource: ['block'],
-						operation: ['get'],
-					},
-				},
-				routing: {
-					request: {
-						qs: {
-							maxDepth: '={{ $value === -1 ? undefined : $value }}',
-						},
-					},
-				},
-			},
-			{
-				displayName: 'Fetch Metadata',
-				name: 'fetchMetadata',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to include metadata like authors and timestamps',
-				displayOptions: {
-					show: {
-						resource: ['block'],
-						operation: ['get'],
-					},
-				},
-				routing: {
-					request: {
-						qs: {
-							fetchMetadata: '={{ $value ? true : undefined }}',
-						},
-					},
-				},
-			},
-		],
+		properties: craftProperties,
 	};
+
+	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+		const items = this.getInputData();
+		const returnData: IDataObject[] = [];
+		const credential = await this.getCredentials('CraftApi').catch(() => null);
+
+		for (let index = 0; index < items.length; index++) {
+			try {
+				const resource = this.getNodeParameter('resource', index) as string;
+				if (resource !== 'block') continue;
+				const operation = this.getNodeParameter('operation', index) as string;
+
+				if (operation === 'fetch') {
+					const blockId = this.getNodeParameter('blockId', index, '') as string;
+					const options = this.getNodeParameter('fetchOptions', index, {}) as IDataObject;
+					const outputFormat = (options.outputFormat as string) || 'json';
+					const maxDepth = (options.maxDepth as number) ?? -1;
+					const fetchMetadata = !!options.fetchMetadata;
+					const qs: IDataObject = {};
+					if (blockId) qs.id = blockId;
+					if (maxDepth !== -1) qs.maxDepth = maxDepth;
+					if (fetchMetadata) qs.fetchMetadata = true;
+					const accept = outputFormat === 'markdown' ? 'text/markdown' : 'application/json';
+					const response = await craftApiRequest.call(
+						this,
+						credential,
+						'GET',
+						'/blocks',
+						{},
+						qs,
+						{ Accept: accept },
+						accept !== 'text/markdown',
+					);
+					pushResult(
+						returnData,
+						outputFormat === 'markdown' ? { markdown: response as string } : response,
+					);
+					continue;
+				}
+
+				if (operation === 'insert') {
+					const blocks = this.getNodeParameter('blocks', index) as IDataObject[];
+					const position = this.getNodeParameter('insertPosition', index, {}) as IDataObject;
+					const type = (position.type as string) || 'end';
+					const response = await craftApiRequest.call(this, credential, 'POST', '/blocks', {
+						blocks,
+						position: {
+							position: type,
+							...(type === 'end' ? { pageId: position.pageId } : { siblingId: position.siblingId }),
+						},
+					});
+					pushResult(returnData, response);
+					continue;
+				}
+
+				if (operation === 'update') {
+					const updatedBlocks = this.getNodeParameter('updatedBlocks', index) as IDataObject[];
+					const response = await craftApiRequest.call(this, credential, 'PUT', '/blocks', {
+						blocks: updatedBlocks,
+					});
+					pushResult(returnData, response);
+					continue;
+				}
+
+				if (operation === 'delete') {
+					const parameters = this.getNodeParameter('deleteParameters', index, {}) as IDataObject;
+					const ids = ensureArray(parameters.blockIds as string[] | string | undefined);
+					if (!ids.length)
+						throw new NodeApiError(
+							this.getNode(),
+							{ message: 'Please supply at least one block ID.' },
+							{ itemIndex: index },
+						);
+					const response = await craftApiRequest.call(this, credential, 'DELETE', '/blocks', {
+						blockIds: ids,
+					});
+					pushResult(returnData, response, 'id');
+					continue;
+				}
+
+				if (operation === 'move') {
+					const parameters = this.getNodeParameter('moveParameters', index, {}) as IDataObject;
+					const ids = ensureArray(parameters.blockIds as string[] | string | undefined);
+					if (!ids.length)
+						throw new NodeApiError(
+							this.getNode(),
+							{ message: 'Please supply at least one block ID to move.' },
+							{ itemIndex: index },
+						);
+					const type = (parameters.positionType as string) || 'after';
+					const response = await craftApiRequest.call(this, credential, 'PUT', '/blocks/move', {
+						blockIds: ids,
+						position: {
+							position: type,
+							...(type === 'end'
+								? { pageId: parameters.pageId }
+								: { siblingId: parameters.siblingId }),
+						},
+					});
+					pushResult(returnData, response, 'id');
+					continue;
+				}
+
+				if (operation === 'search') {
+					const pattern = this.getNodeParameter('pattern', index) as string;
+					const options = this.getNodeParameter('searchOptions', index, {}) as IDataObject;
+					const qs: IDataObject = { pattern };
+					if (options.caseSensitive) qs.caseSensitive = true;
+					if (options.beforeBlockCount) qs.beforeBlockCount = options.beforeBlockCount;
+					if (options.afterBlockCount) qs.afterBlockCount = options.afterBlockCount;
+					const response = await craftApiRequest.call(
+						this,
+						credential,
+						'GET',
+						'/blocks/search',
+						{},
+						qs,
+					);
+					pushResult(returnData, response);
+				}
+			} catch (error) {
+				throw new NodeApiError(this.getNode(), error, { itemIndex: index });
+			}
+		}
+
+		return [this.helpers.returnJsonArray(returnData)];
+	}
 }

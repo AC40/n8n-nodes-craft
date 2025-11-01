@@ -1,0 +1,55 @@
+import type {
+	ICredentialDataDecryptedObject,
+	IDataObject,
+	IExecuteFunctions,
+	IHttpRequestMethods,
+	IHttpRequestOptions,
+} from 'n8n-workflow';
+
+const BASE_URL = 'https://connect.craft.do/links/GogouBnj9Cj/api/v1';
+
+export const ensureArray = (value: string | string[] | undefined) =>
+	Array.isArray(value) ? value : value ? [value] : [];
+
+export const pushResult = (collector: IDataObject[], data: unknown, fallback = 'value') => {
+	if (Array.isArray(data)) {
+		data.forEach((entry) => pushResult(collector, entry, fallback));
+		return;
+	}
+	if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') {
+		collector.push({ [fallback]: data });
+		return;
+	}
+	if (data && typeof data === 'object') {
+		collector.push(data as IDataObject);
+	} else {
+		collector.push({});
+	}
+};
+
+export async function craftApiRequest(
+	this: IExecuteFunctions,
+	credential: ICredentialDataDecryptedObject | null,
+	method: IHttpRequestMethods,
+	endpoint: string,
+	body: IDataObject = {},
+	qs: IDataObject = {},
+	headers: IDataObject = {},
+	json = true,
+) {
+	const options: IHttpRequestOptions = {
+		method,
+		url: `${BASE_URL}${endpoint}`,
+		qs,
+		headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...headers },
+		json,
+	};
+	if (Object.keys(body).length) options.body = body;
+	if (!json) {
+		options.json = false;
+		delete options.body;
+		delete (options.headers as IDataObject)['Content-Type'];
+	}
+	if (credential) return this.helpers.requestWithAuthentication.call(this, 'CraftApi', options);
+	return this.helpers.httpRequest.call(this, options);
+}
