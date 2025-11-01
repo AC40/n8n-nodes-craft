@@ -6,7 +6,8 @@ import type {
 	IHttpRequestOptions,
 } from 'n8n-workflow';
 
-const BASE_URL = 'https://connect.craft.do/links/GogouBnj9Cj/api/v1';
+const buildBaseUrl = (documentId: string) =>
+	`https://connect.craft.do/links/${encodeURIComponent(documentId)}/api/v1`;
 
 export const ensureArray = (value: string | string[] | undefined) =>
 	Array.isArray(value) ? value : value ? [value] : [];
@@ -30,6 +31,7 @@ export const pushResult = (collector: IDataObject[], data: unknown, fallback = '
 export async function craftApiRequest(
 	this: IExecuteFunctions,
 	credential: ICredentialDataDecryptedObject | null,
+	documentId: string,
 	method: IHttpRequestMethods,
 	endpoint: string,
 	body: IDataObject = {},
@@ -39,7 +41,7 @@ export async function craftApiRequest(
 ) {
 	const options: IHttpRequestOptions = {
 		method,
-		url: `${BASE_URL}${endpoint}`,
+		url: `${buildBaseUrl(documentId)}${endpoint}`,
 		qs,
 		headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...headers },
 		json,

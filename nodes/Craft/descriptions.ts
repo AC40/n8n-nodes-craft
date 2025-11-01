@@ -10,7 +10,7 @@ const documentPropery: INodeProperties = {
 	default: '',
 	description:
 		'ID of the document to fetch. Usually a 11 char string. Can be found by takting the part between "https://connect.craft.do/link/" and "/docs/v1"',
-	displayOptions: { show: { resource: ['document'] } },
+	required: true,
 };
 
 const resourceProperty: INodeProperties = {

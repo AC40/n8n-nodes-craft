@@ -36,6 +36,7 @@ export class Craft implements INodeType {
 				const resource = this.getNodeParameter('resource', index) as string;
 				if (resource !== 'block') continue;
 				const operation = this.getNodeParameter('operation', index) as string;
+				const documentId = this.getNodeParameter('documentId', index) as string;
 
 				if (operation === 'fetch') {
 					const blockId = this.getNodeParameter('blockId', index, '') as string;
@@ -51,6 +52,7 @@ export class Craft implements INodeType {
 					const response = await craftApiRequest.call(
 						this,
 						credential,
+						documentId,
 						'GET',
 						'/blocks',
 						{},
@@ -69,22 +71,38 @@ export class Craft implements INodeType {
 					const blocks = this.getNodeParameter('blocks', index) as IDataObject[];
 					const position = this.getNodeParameter('insertPosition', index, {}) as IDataObject;
 					const type = (position.type as string) || 'end';
-					const response = await craftApiRequest.call(this, credential, 'POST', '/blocks', {
-						blocks,
-						position: {
-							position: type,
-							...(type === 'end' ? { pageId: position.pageId } : { siblingId: position.siblingId }),
+					const response = await craftApiRequest.call(
+						this,
+						credential,
+						documentId,
+						'POST',
+						'/blocks',
+						{
+							blocks,
+							position: {
+								position: type,
+								...(type === 'end'
+									? { pageId: position.pageId }
+									: { siblingId: position.siblingId }),
+							},
 						},
-					});
+					);
 					pushResult(returnData, response);
 					continue;
 				}
 
 				if (operation === 'update') {
 					const updatedBlocks = this.getNodeParameter('updatedBlocks', index) as IDataObject[];
-					const response = await craftApiRequest.call(this, credential, 'PUT', '/blocks', {
-						blocks: updatedBlocks,
-					});
+					const response = await craftApiRequest.call(
+						this,
+						credential,
+						documentId,
+						'PUT',
+						'/blocks',
+						{
+							blocks: updatedBlocks,
+						},
+					);
 					pushResult(returnData, response);
 					continue;
 				}
@@ -98,9 +116,16 @@ export class Craft implements INodeType {
 							{ message: 'Please supply at least one block ID.' },
 							{ itemIndex: index },
 						);
-					const response = await craftApiRequest.call(this, credential, 'DELETE', '/blocks', {
-						blockIds: ids,
-					});
+					const response = await craftApiRequest.call(
+						this,
+						credential,
+						documentId,
+						'DELETE',
+						'/blocks',
+						{
+							blockIds: ids,
+						},
+					);
 					pushResult(returnData, response, 'id');
 					continue;
 				}
@@ -115,15 +140,22 @@ export class Craft implements INodeType {
 							{ itemIndex: index },
 						);
 					const type = (parameters.positionType as string) || 'after';
-					const response = await craftApiRequest.call(this, credential, 'PUT', '/blocks/move', {
-						blockIds: ids,
-						position: {
-							position: type,
-							...(type === 'end'
-								? { pageId: parameters.pageId }
-								: { siblingId: parameters.siblingId }),
+					const response = await craftApiRequest.call(
+						this,
+						credential,
+						documentId,
+						'PUT',
+						'/blocks/move',
+						{
+							blockIds: ids,
+							position: {
+								position: type,
+								...(type === 'end'
+									? { pageId: parameters.pageId }
+									: { siblingId: parameters.siblingId }),
+							},
 						},
-					});
+					);
 					pushResult(returnData, response, 'id');
 					continue;
 				}
@@ -138,6 +170,7 @@ export class Craft implements INodeType {
 					const response = await craftApiRequest.call(
 						this,
 						credential,
+						documentId,
 						'GET',
 						'/blocks/search',
 						{},
