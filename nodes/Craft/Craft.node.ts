@@ -79,9 +79,20 @@ export class Craft implements INodeType {
 					const blocksParam = this.getNodeParameter('blocks', index);
 					const blocks = parseParameter<IDataObject[]>(blocksParam) ?? [];
 
-					const position = this.getNodeParameter('insertPosition', index, {}) as IDataObject;
+					const positionParam = this.getNodeParameter('insertPosition', index, {});
+					const position = parseParameter<IDataObject>(positionParam) ?? {};
+
 					const type = (position.type as string) || 'end';
-					console.log('type', type);
+
+					const bodyPosition: IDataObject = {
+						position: type,
+					};
+					if ((type === 'end' || type === 'start') && position.pageId) {
+						bodyPosition.pageId = position.pageId;
+					} else if ((type === 'before' || type === 'after') && position.siblingId) {
+						bodyPosition.siblingId = position.siblingId;
+					}
+
 					const response = await craftApiRequest({
 						_this: this,
 						credential,
@@ -90,12 +101,7 @@ export class Craft implements INodeType {
 						endpoint: '/blocks',
 						body: {
 							blocks,
-							position: {
-								position: type,
-								...(type === 'end'
-									? { pageId: position.pageId }
-									: { siblingId: position.siblingId }),
-							},
+							position: bodyPosition,
 						},
 						qs: {},
 						headers: {},

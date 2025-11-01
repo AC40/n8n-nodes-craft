@@ -27,6 +27,7 @@ export const blockMutationProperties: INodeProperties[] = [
 				name: 'type',
 				type: 'options',
 				options: [
+					{ name: 'Start of Page', value: 'start' },
 					{ name: 'End of Page', value: 'end' },
 					{ name: 'Before Block', value: 'before' },
 					{ name: 'After Block', value: 'after' },
@@ -38,14 +39,16 @@ export const blockMutationProperties: INodeProperties[] = [
 				name: 'pageId',
 				type: 'string',
 				default: '',
-				description: 'Required when position type is End of Page',
+				description:
+					'The page ID where to insert the block when position type is Start of Page or End of Page. Defaults to 0 (root document).',
 			},
 			{
 				displayName: 'Sibling ID',
 				name: 'siblingId',
 				type: 'string',
 				default: '',
-				description: 'Required when position type is Before or After',
+				placeholder: 'Required when position type is Before or After',
+				description: 'The ID of the sibling block.',
 			},
 		],
 	},
@@ -109,6 +112,11 @@ export const blockMutationProperties: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Required when position type is End of Page',
+				displayOptions: {
+					show: {
+						'moveParameters.positionType': ['end'],
+					},
+				},
 			},
 			{
 				displayName: 'Sibling ID',
@@ -116,6 +124,11 @@ export const blockMutationProperties: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Required when position type is Before or After',
+				displayOptions: {
+					show: {
+						'moveParameters.positionType': ['before', 'after'],
+					},
+				},
 			},
 		],
 	},
