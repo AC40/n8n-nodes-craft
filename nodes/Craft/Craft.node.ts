@@ -280,15 +280,42 @@ export class Craft implements INodeType {
 				}
 
 				if (operation === 'move') {
-					const parameters = this.getNodeParameter('moveParameters', index, {}) as IDataObject;
-					const ids = ensureArray(parameters.blockIds as string[] | string | undefined);
-					if (!ids.length)
+					const inputMode = this.getNodeParameter('moveInputMode', index, 'form') as string;
+					let ids: string[] = [];
+
+					if (inputMode === 'json') {
+						const blockIdsParam = this.getNodeParameter('blockIdsJson', index);
+						const parsedIds = parseParameter<string[]>(blockIdsParam);
+						ids = parsedIds || [];
+					} else {
+						const blockIdsForm = this.getNodeParameter('blockIdsForm', index) as
+							| string[]
+							| string
+							| undefined;
+						ids = ensureArray(blockIdsForm);
+					}
+
+					if (!ids.length) {
 						throw new NodeApiError(
 							this.getNode(),
 							{ message: 'Please supply at least one block ID to move.' },
 							{ itemIndex: index },
 						);
-					const type = (parameters.positionType as string) || 'after';
+					}
+
+					const positionParam = this.getNodeParameter('movePosition', index, {}) as IDataObject;
+					const position = parseParameter<IDataObject>(positionParam) ?? {};
+					const type = (position.type as string) || 'end';
+
+					const bodyPosition: IDataObject = {
+						position: type,
+					};
+					if ((type === 'end' || type === 'start') && position.pageId) {
+						bodyPosition.pageId = position.pageId;
+					} else if ((type === 'before' || type === 'after') && position.siblingId) {
+						bodyPosition.siblingId = position.siblingId;
+					}
+
 					const response = await craftApiRequest({
 						_this: this,
 						credential,
@@ -297,12 +324,7 @@ export class Craft implements INodeType {
 						endpoint: '/blocks/move',
 						body: {
 							blockIds: ids,
-							position: {
-								position: type,
-								...(type === 'end'
-									? { pageId: parameters.pageId }
-									: { siblingId: parameters.siblingId }),
-							},
+							position: bodyPosition,
 						},
 						qs: {},
 						headers: {},
@@ -315,10 +337,13 @@ export class Craft implements INodeType {
 				if (operation === 'search') {
 					const pattern = this.getNodeParameter('pattern', index) as string;
 					const options = this.getNodeParameter('searchOptions', index, {}) as IDataObject;
+
 					const qs: IDataObject = { pattern };
+
 					if (options.caseSensitive) qs.caseSensitive = true;
 					if (options.beforeBlockCount) qs.beforeBlockCount = options.beforeBlockCount;
 					if (options.afterBlockCount) qs.afterBlockCount = options.afterBlockCount;
+
 					const response = await craftApiRequest({
 						_this: this,
 						credential,
