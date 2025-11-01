@@ -1,129 +1,26 @@
-import { INodeType, INodeTypeDescription } from 'n8n-workflow';
+import type { INodeType, INodeTypeDescription } from 'n8n-workflow';
 
 export class GetCraftBlock implements INodeType {
 	description: INodeTypeDescription = {
-		properties: [
-			{
-				displayName: 'Craft API Key',
-				name: 'craftApiKey',
-				type: 'string',
-				default: '',
-			},
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: {
-					show: {
-						resource: ['astronomyPictureOfTheDay'],
-					},
-				},
-				options: [
-					{
-						name: 'Get',
-						value: 'get',
-						action: 'Get the APOD',
-						description: 'Get the Astronomy Picture of the day',
-						routing: {
-							request: {
-								method: 'GET',
-								url: '/planetary/apod',
-							},
-						},
-					},
-				],
-				default: 'get',
-			},
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: {
-					show: {
-						resource: ['marsRoverPhotos'],
-					},
-				},
-				options: [
-					{
-						name: 'Get',
-						value: 'get',
-						action: 'Get Mars Rover photos',
-						description: 'Get photos from the Mars Rover',
-						routing: {
-							request: {
-								method: 'GET',
-							},
-						},
-					},
-				],
-				default: 'get',
-			},
-			{
-				displayName: 'Rover name',
-				description: 'Choose which Mars Rover to get a photo from',
-				required: true,
-				name: 'roverName',
-				type: 'options',
-				options: [
-					{ name: 'Curiosity', value: 'curiosity' },
-					{ name: 'Opportunity', value: 'opportunity' },
-					{ name: 'Perseverance', value: 'perseverance' },
-					{ name: 'Spirit', value: 'spirit' },
-				],
-				routing: {
-					request: {
-						url: '=/mars-photos/api/v1/rovers/{{$value}}/photos',
-					},
-				},
-				default: 'curiosity',
-				displayOptions: {
-					show: {
-						resource: ['marsRoverPhotos'],
-					},
-				},
-			},
-			{
-				displayName: 'Date',
-				description: 'Earth date',
-				required: true,
-				name: 'marsRoverDate',
-				type: 'dateTime',
-				default: '',
-				displayOptions: {
-					show: {
-						resource: ['marsRoverPhotos'],
-					},
-				},
-				routing: {
-					request: {
-						// You've already set up the URL. qs appends the value of the field as a query string
-						qs: {
-							earth_date: '={{ new Date($value).toISOString().substr(0,10) }}',
-						},
-					},
-				},
-			},
-		],
-		displayName: 'Get Craft Block',
+		displayName: 'Craft',
 		name: 'getCraftBlock',
 		icon: 'file:craft_logo_original.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Get a block from Craft',
+		description: 'Interact with the Craft API',
 		defaults: {
-			name: 'Get Craft Block',
+			name: 'Craft',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
 		credentials: [
 			{
 				name: 'CraftApi',
-				required: true,
+				required: false,
 			},
 		],
+		documentationUrl: 'https://docs.n8n.io/integrations/custom-nodes/',
 		requestDefaults: {
 			baseURL: 'https://connect.craft.do/links/GogouBnj9Cj/api/v1',
 			headers: {
@@ -131,5 +28,112 @@ export class GetCraftBlock implements INodeType {
 				'Content-Type': 'application/json',
 			},
 		},
+		properties: [
+			{
+				displayName: 'Resource',
+				name: 'resource',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Block',
+						value: 'block',
+					},
+				],
+				default: 'block',
+				required: true,
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['block'],
+					},
+				},
+				options: [
+					{
+						name: 'Get',
+						value: 'get',
+						action: 'Get a block',
+						description: 'Retrieve a Craft block by ID',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '/blocks',
+							},
+						},
+					},
+				],
+				default: 'get',
+				required: true,
+			},
+			{
+				displayName: 'Block ID',
+				name: 'blockId',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'ID of the block to fetch',
+				displayOptions: {
+					show: {
+						resource: ['block'],
+						operation: ['get'],
+					},
+				},
+				routing: {
+					request: {
+						qs: {
+							id: '={{ $value }}',
+						},
+					},
+				},
+			},
+			{
+				displayName: 'Max Depth',
+				name: 'maxDepth',
+				type: 'number',
+				default: -1,
+				description: 'Maximum depth of descendants to fetch. Use -1 to fetch all levels.',
+				typeOptions: {
+					minValue: -1,
+				},
+				displayOptions: {
+					show: {
+						resource: ['block'],
+						operation: ['get'],
+					},
+				},
+				routing: {
+					request: {
+						qs: {
+							maxDepth: '={{ $value === -1 ? undefined : $value }}',
+						},
+					},
+				},
+			},
+			{
+				displayName: 'Fetch Metadata',
+				name: 'fetchMetadata',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to include metadata like authors and timestamps',
+				displayOptions: {
+					show: {
+						resource: ['block'],
+						operation: ['get'],
+					},
+				},
+				routing: {
+					request: {
+						qs: {
+							fetchMetadata: '={{ $value ? true : undefined }}',
+						},
+					},
+				},
+			},
+		],
 	};
 }
