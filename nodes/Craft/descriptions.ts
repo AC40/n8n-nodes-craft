@@ -44,7 +44,7 @@ const operationProperty: INodeProperties = {
 	type: 'options',
 	noDataExpression: true,
 	displayOptions: { show: { resource: ['block'] } },
-	default: operations[0][0],
+	default: '',
 	options: operations.map(([value, name, action, description]) => ({
 		name,
 		value,

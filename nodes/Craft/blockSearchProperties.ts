@@ -23,7 +23,7 @@ export const blockSearchProperties: INodeProperties[] = [
 			{
 				displayName: 'Case Sensitive',
 				name: 'caseSensitive',
-				description: 'Whether the search should be case sensitive.',
+				description: 'Whether the search should be case sensitive',
 				type: 'boolean',
 				default: false,
 			},

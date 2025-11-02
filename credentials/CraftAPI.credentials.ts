@@ -6,15 +6,14 @@ import type {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export class CraftAPI implements ICredentialType {
+export class CraftApi implements ICredentialType {
 	name = 'craftApi';
 
 	displayName = 'Craft API';
 
 	icon: Icon = { light: 'file:craft_logo_original.svg', dark: 'file:craft_logo_light.svg' };
 
-	//TODO: create personal craft doc to explain
-	documentationUrl = '';
+	documentationUrl = 'https://ac-rich.craft.me/1qjRHwQqnPzlaV';
 
 	properties: INodeProperties[] = [
 		{

@@ -8,8 +8,13 @@ import type {
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 import { craftProperties } from './descriptions';
-import { craftApiRequest, ensureArray, parseParameter, pushResult } from './helpers';
-import { fileTypeFromBuffer } from 'file-type';
+import {
+	craftApiRequest,
+	detectMimeType,
+	ensureArray,
+	parseParameter,
+	pushResult,
+} from './helpers';
 
 export class Craft implements INodeType {
 	description: INodeTypeDescription = {
@@ -140,10 +145,10 @@ export class Craft implements INodeType {
 
 					const fileName =
 						overrideFileName || binaryMetadata?.fileName || `craft-upload-${Date.now()}`;
+					const metadataMimeType =
+						typeof binaryMetadata?.mimeType === 'string' ? binaryMetadata.mimeType : '';
 					const mimeType =
-						overrideMimeType ||
-						(await fileTypeFromBuffer(binaryData))?.mime ||
-						'application/octet-stream';
+						overrideMimeType || metadataMimeType || detectMimeType(binaryData, fileName);
 					const uploadLink = (await craftApiRequest({
 						_this: this,
 						credential,

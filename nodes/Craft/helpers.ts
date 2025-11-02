@@ -4,6 +4,7 @@ import type {
 	IExecuteFunctions,
 	IHttpRequestMethods,
 	IHttpRequestOptions,
+	NodeParameterValueType,
 } from 'n8n-workflow';
 
 const buildBaseUrl = (documentId: string) =>
@@ -73,7 +74,9 @@ export async function craftApiRequest({
 	return _this.helpers.httpRequest.call(_this, options);
 }
 
-export const parseParameter = <T>(param: any): T | null => {
+export const parseParameter = <T>(
+	param: string | IDataObject | object | NodeParameterValueType,
+): T | null => {
 	if (typeof param === 'string') {
 		try {
 			return JSON.parse(param) as T;
@@ -84,3 +87,5 @@ export const parseParameter = <T>(param: any): T | null => {
 	}
 	return (param as T) || null;
 };
+
+export { detectMimeType } from './mime';

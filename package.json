@@ -1,19 +1,20 @@
 {
 	"name": "n8n-nodes-craft",
 	"version": "0.1.0",
-	"description": "",
+	"description": "Unofficial n8n node for the Craft API (currently still in closed beta)",
 	"license": "MIT",
 	"homepage": "",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"craftdocs"
 	],
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "AC40",
+		"email": "ac40@users.noreply.github.com"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/<...>/n8n-nodes-<...>.git"
+		"url": "https://github.com/ac40/n8n-nodes-craft.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
@@ -31,7 +32,7 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/CraftAPI.credentials.js",
+			"dist/credentials/CraftApi.credentials.js",
 			"dist/credentials/GithubIssuesApi.credentials.js",
 			"dist/credentials/GithubIssuesOAuth2Api.credentials.js"
 		],
@@ -42,8 +43,7 @@
 		]
 	},
 	"dependencies": {
-		"@types/node": "^24.9.2",
-		"file-type": "^21.0.0"
+		"@types/node": "^24.9.2"
 	},
 	"pnpm": {
 		"peerDependencyRules": {
