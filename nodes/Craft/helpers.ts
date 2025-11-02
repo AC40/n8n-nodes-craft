@@ -4,6 +4,7 @@ import type {
 	IExecuteFunctions,
 	IHttpRequestMethods,
 	IHttpRequestOptions,
+	ILoadOptionsFunctions,
 	NodeParameterValueType,
 } from 'n8n-workflow';
 
@@ -12,6 +13,13 @@ const buildBaseUrl = (documentId: string) =>
 
 export const ensureArray = (value: string | string[] | undefined) =>
 	Array.isArray(value) ? value : value ? [value] : [];
+
+export const toCollectionSlug = (label: string) =>
+	label
+		.trim()
+		.toLowerCase()
+		.replace(/\s+/g, '_')
+		.replace(/[^a-z0-9_-]/g, '');
 
 export const pushResult = (collector: IDataObject[], data: unknown, fallback = 'value') => {
 	if (Array.isArray(data)) {
@@ -29,8 +37,10 @@ export const pushResult = (collector: IDataObject[], data: unknown, fallback = '
 	}
 };
 
+type CraftContext = IExecuteFunctions | ILoadOptionsFunctions;
+
 type CraftApiRequestOptions = {
-	_this: IExecuteFunctions;
+	_this: CraftContext;
 	credential: ICredentialDataDecryptedObject | null;
 	documentId: string;
 	method: IHttpRequestMethods;

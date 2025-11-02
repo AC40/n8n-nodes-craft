@@ -3,6 +3,7 @@ import { blockFetchProperties } from './blockFetchProperties';
 import { blockMutationProperties } from './blockMutationProperties';
 import { blockUploadProperties } from './blockUploadProperties';
 import { blockSearchProperties } from './blockSearchProperties';
+import { collectionOperationProperty, collectionProperties } from './collectionProperties';
 
 const documentPropery: INodeProperties = {
 	displayName: 'Document',
@@ -19,7 +20,10 @@ const resourceProperty: INodeProperties = {
 	name: 'resource',
 	type: 'options',
 	noDataExpression: true,
-	options: [{ name: 'Block', value: 'block' }],
+	options: [
+		{ name: 'Block', value: 'block' },
+		{ name: 'Collection', value: 'collection' },
+	],
 	default: 'block',
 };
 
@@ -57,6 +61,8 @@ export const craftProperties: INodeProperties[] = [
 	documentPropery,
 	resourceProperty,
 	operationProperty,
+	collectionOperationProperty,
+	...collectionProperties,
 	...blockFetchProperties,
 	...blockMutationProperties,
 	...blockUploadProperties,
