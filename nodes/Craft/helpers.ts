@@ -18,8 +18,8 @@ export const toCollectionSlug = (label: string) =>
 	label
 		.trim()
 		.toLowerCase()
-		.replace(/\s+/g, '_')
-		.replace(/[^a-z0-9_-]/g, '');
+		.replace(/ /g, '_')
+		.replace(/[^a-z0-9_]/g, '');
 
 export const pushResult = (collector: IDataObject[], data: unknown, fallback = 'value') => {
 	if (Array.isArray(data)) {

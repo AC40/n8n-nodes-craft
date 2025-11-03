@@ -4,6 +4,8 @@ import type {
 	IHttpRequestMethods,
 	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodeListSearchItems,
+	INodeListSearchResult,
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
@@ -18,6 +20,70 @@ import {
 	pushResult,
 	toCollectionSlug,
 } from './helpers';
+
+const resolveCollectionOptions = async (
+	context: ILoadOptionsFunctions,
+): Promise<{ options: INodePropertyOptions[]; missingDocument: boolean }> => {
+	let documentId = '';
+	try {
+		documentId = (context.getNodeParameter('documentId', 0) as string) || '';
+	} catch {
+		return { options: [], missingDocument: true };
+	}
+	documentId = documentId.trim();
+	if (!documentId) return { options: [], missingDocument: true };
+
+	const credential = await context.getCredentials('craftApi').catch(() => null);
+
+	let response: unknown;
+	try {
+		response = await craftApiRequest({
+			_this: context,
+			credential,
+			documentId,
+			method: 'GET',
+			endpoint: '/blocks',
+			body: {},
+			qs: {},
+			headers: {},
+			json: true,
+		});
+	} catch (error) {
+		console.warn('Failed to fetch Craft collections', error);
+		return { options: [], missingDocument: false };
+	}
+
+	const options: INodePropertyOptions[] = [];
+	const seen = new Set<string>();
+
+	const upsertOption = (name: string) => {
+		const trimmed = name.trim();
+		const slug = toCollectionSlug(trimmed);
+		if (!trimmed || !slug || seen.has(slug)) return;
+		seen.add(slug);
+		options.push({ name: trimmed, value: slug });
+	};
+
+	const walk = (nodes: unknown): void => {
+		if (!Array.isArray(nodes)) return;
+		nodes.forEach((entry) => {
+			if (!entry || typeof entry !== 'object') return;
+			const block = entry as IDataObject;
+			if ((block.type as string) === 'collection' && typeof block.markdown === 'string') {
+				upsertOption(block.markdown);
+			}
+			if (Array.isArray(block.content)) walk(block.content as IDataObject[]);
+		});
+	};
+
+	if (Array.isArray(response)) walk(response as IDataObject[]);
+	else if (response && typeof response === 'object') {
+		const root = response as IDataObject;
+		if (Array.isArray(root.content)) walk(root.content as IDataObject[]);
+	}
+
+	return { options, missingDocument: false };
+};
 
 export class Craft implements INodeType {
 	description: INodeTypeDescription = {
@@ -40,70 +106,45 @@ export class Craft implements INodeType {
 	methods = {
 		loadOptions: {
 			async getCollections(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const documentId = (this.getNodeParameter('documentId', '') as string).trim();
-				if (!documentId) {
+				const { options, missingDocument } = await resolveCollectionOptions(this);
+				if (missingDocument) {
 					return [
 						{
 							name: 'Enter a document ID first',
 							value: '',
-							description: 'Set Document before selecting a collection',
 						},
 					];
 				}
-
-				const credential = await this.getCredentials('craftApi').catch(() => null);
-				const response = await craftApiRequest({
-					_this: this,
-					credential,
-					documentId,
-					method: 'GET',
-					endpoint: '/blocks',
-					body: {},
-					qs: {},
-					headers: {},
-					json: true,
-				});
-
-				const options: INodePropertyOptions[] = [];
-				const seen = new Set<string>();
-
-				const upsertOption = (name: string) => {
-					const trimmed = name.trim();
-					const slug = toCollectionSlug(trimmed);
-					if (!trimmed || !slug || seen.has(slug)) return;
-					seen.add(slug);
-					options.push({ name: trimmed, value: slug, description: trimmed });
-				};
-
-				const walk = (nodes: unknown): void => {
-					if (!Array.isArray(nodes)) return;
-					nodes.forEach((entry) => {
-						if (!entry || typeof entry !== 'object') return;
-						const block = entry as IDataObject;
-						if ((block.type as string) === 'collection' && typeof block.markdown === 'string') {
-							upsertOption(block.markdown);
-						}
-						if (Array.isArray(block.content)) walk(block.content as IDataObject[]);
-					});
-				};
-
-				if (Array.isArray(response)) walk(response as IDataObject[]);
-				else if (response && typeof response === 'object') {
-					const root = response as IDataObject;
-					if (Array.isArray(root.content)) walk(root.content as IDataObject[]);
-				}
-
 				if (!options.length) {
 					return [
 						{
 							name: 'No collections detected in document',
 							value: '',
-							description: 'Switch to manual input if needed',
 						},
 					];
 				}
-
 				return options;
+			},
+		},
+		listSearch: {
+			async searchCollections(
+				this: ILoadOptionsFunctions,
+				filter?: string,
+			): Promise<INodeListSearchResult> {
+				const { options } = await resolveCollectionOptions(this);
+				const normalized = filter?.toLowerCase().trim();
+				const filtered = normalized
+					? options.filter((option) =>
+							typeof option.name === 'string'
+								? option.name.toLowerCase().includes(normalized)
+								: false,
+						)
+					: options;
+				const results: INodeListSearchItems[] = filtered.map((option) => ({
+					name: String(option.name),
+					value: String(option.value),
+				}));
+				return { results };
 			},
 		},
 	};
@@ -252,7 +293,7 @@ export class Craft implements INodeType {
 								);
 							}
 
-							const uploadResponse = await this.helpers.httpRequest({
+							await this.helpers.httpRequest({
 								method: uploadMethod,
 								url: uploadUrl,
 								headers: {
@@ -262,8 +303,6 @@ export class Craft implements INodeType {
 								body: binaryData,
 								json: false,
 							});
-
-							console.log('uploadResponse', uploadResponse);
 
 							const blockType = (blockOptions.blockType as string) || 'file';
 							const blockPayload: IDataObject = {
@@ -451,19 +490,21 @@ export class Craft implements INodeType {
 						);
 					}
 					case 'collection': {
-						const collectionInputMode = this.getNodeParameter(
-							'collectionInputMode',
+						const collectionLocator = this.getNodeParameter(
+							'collectionLocator',
 							index,
-							'select',
-						) as string;
-						const rawCollectionName =
-							collectionInputMode === 'manual'
-								? (this.getNodeParameter('collectionNameManual', index, '') as string)
-								: (this.getNodeParameter('collectionName', index, '') as string);
-						const trimmedCollectionName = rawCollectionName.trim();
-						let collectionName = toCollectionSlug(trimmedCollectionName);
-						if (!collectionName) {
-							collectionName = trimmedCollectionName;
+						) as IDataObject;
+						const mode = (collectionLocator.mode as string) || 'list';
+						const rawCollectionValue =
+							typeof collectionLocator.value === 'string' ? collectionLocator.value : '';
+						const trimmedCollectionName = rawCollectionValue.trim();
+						let collectionName = trimmedCollectionName;
+						if (mode !== 'id') {
+							collectionName = toCollectionSlug(trimmedCollectionName);
+							console.log('collectionName', collectionName);
+						} else {
+							const slug = toCollectionSlug(trimmedCollectionName);
+							if (slug) collectionName = slug;
 						}
 						if (!collectionName) {
 							throw new NodeApiError(
@@ -474,7 +515,6 @@ export class Craft implements INodeType {
 						}
 						const encodedCollectionName = encodeURIComponent(collectionName);
 						const collectionEndpoint = `/collections/${encodedCollectionName}/items`;
-
 						if (operation === 'list') {
 							const optionsParam = this.getNodeParameter('collectionListOptions', index, {});
 							const options = parseParameter<IDataObject>(optionsParam) ?? {};
@@ -488,7 +528,6 @@ export class Craft implements INodeType {
 								outputFormat === 'markdown'
 									? 'application/json; content=markdown'
 									: 'application/json';
-
 							const response = await craftApiRequest({
 								_this: this,
 								credential,

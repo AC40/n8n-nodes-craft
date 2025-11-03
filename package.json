@@ -6,11 +6,11 @@
 	"homepage": "",
 	"keywords": [
 		"n8n-community-node-package",
-		"craftdocs"
+		"craft.do"
 	],
 	"author": {
-		"name": "AC40",
-		"email": "n8n-nodes-craft@aaronrichter.de"
+		"name": "Aaron Richter",
+		"email": "contact@aaronrichter.tech"
 	},
 	"repository": {
 		"type": "git",

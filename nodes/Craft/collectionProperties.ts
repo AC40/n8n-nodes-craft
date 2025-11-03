@@ -44,43 +44,31 @@ export const collectionOperationProperty: INodeProperties = {
 
 export const collectionProperties: INodeProperties[] = [
 	{
-		displayName: 'Collection Source',
-		name: 'collectionInputMode',
-		type: 'options',
-		default: 'select',
-		description: 'Choose how to target a collection',
+		displayName: 'Collection',
+		name: 'collectionLocator',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		required: true,
+		description: 'Select or enter the collection to target',
 		displayOptions: { show: { resource: ['collection'] } },
-		options: [
-			{ name: 'Select from Document', value: 'select' },
-			{ name: 'Enter Manually', value: 'manual' },
+		modes: [
+			{
+				displayName: 'Collection',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'searchCollections',
+					searchFilterRequired: false,
+				},
+				placeholder: 'Select a collection...',
+			},
+			{
+				displayName: 'Manual',
+				name: 'id',
+				type: 'string',
+				placeholder: 'collection_slug',
+			},
 		],
-	},
-	{
-		displayName: 'Collection Name',
-		name: 'collectionName',
-		type: 'options',
-		default: '',
-		required: true,
-		description: 'Pick a collection detected in the document',
-		displayOptions: {
-			show: { resource: ['collection'], collectionInputMode: ['select'] },
-		},
-		typeOptions: {
-			loadOptionsMethod: 'getCollections',
-			loadOptionsDependsOn: ['documentId'],
-		},
-		options: [],
-	},
-	{
-		displayName: 'Collection Name',
-		name: 'collectionNameManual',
-		type: 'string',
-		default: '',
-		required: true,
-		description: 'API identifier of the collection (e.g. "test_collection"). Case-sensitive.',
-		displayOptions: {
-			show: { resource: ['collection'], collectionInputMode: ['manual'] },
-		},
 	},
 	{
 		displayName: 'List Options',
