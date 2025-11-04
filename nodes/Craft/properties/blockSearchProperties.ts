@@ -9,7 +9,7 @@ export const blockSearchProperties: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'Search pattern using Node.js RegExp syntax',
+		description: 'Search pattern to look for. Supports NodeJS regular expressions.',
 		displayOptions: { show: display },
 	},
 	{

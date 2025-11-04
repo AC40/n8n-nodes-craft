@@ -11,7 +11,10 @@ export class CraftApi implements ICredentialType {
 
 	displayName = 'Craft API';
 
-	icon: Icon = { light: 'file:craft_logo_original.svg', dark: 'file:craft_logo_light.svg' };
+	icon: Icon = {
+		light: 'file:..//icons/craft_logo_original.svg',
+		dark: 'file:..//icons/craft_logo_light.svg',
+	};
 
 	documentationUrl = 'https://ac-rich.craft.me/1qjRHwQqnPzlaV';
 
@@ -29,10 +32,10 @@ export class CraftApi implements ICredentialType {
 			name: 'documentId',
 			type: 'string',
 			default: '',
-			required: false,
+			required: true,
 			description:
-				'The ID of the document to work with. Usually an 11-character string between "https://connect.craft.do/link/" and "/docs/v1". Optional, only used to test connection. Credential will work without it.',
-			placeholder: 'Optional, only used to test connection',
+				'The ID of the document to which this API Key belongs. Usually an 11-character string between "https://connect.craft.do/link/" and "/docs/v1".',
+			placeholder: 'The API identifier of this document',
 		},
 	];
 

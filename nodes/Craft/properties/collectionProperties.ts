@@ -105,7 +105,7 @@ export const collectionProperties: INodeProperties[] = [
 		type: 'json',
 		default: '[]',
 		required: true,
-		description: 'Array of items to create. Example: [{"title":"Example","properties":{}}]',
+		description: 'Array of items to create. Example: [{"title":"Example","properties":{ ... }}]',
 		displayOptions: show('create'),
 	},
 	{
@@ -131,7 +131,7 @@ export const collectionProperties: INodeProperties[] = [
 		type: 'json',
 		default: '[]',
 		required: true,
-		description: 'Array of items with IDs to update. Example: [{"id":"1","title":"Updated"}]',
+		description: 'Array of items with IDs to update. Example: [{"id":"1","properties": { ... }}]',
 		displayOptions: show('update'),
 	},
 	{

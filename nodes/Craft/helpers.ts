@@ -64,6 +64,9 @@ export async function craftApiRequest({
 	headers,
 	json,
 }: CraftApiRequestOptions) {
+	console.log('credential', credential);
+	console.log(credential?.apiKey);
+	console.log(credential?.documentId);
 	const options: IHttpRequestOptions = {
 		method,
 		url: `${buildBaseUrl(documentId)}${endpoint}`,
@@ -77,10 +80,12 @@ export async function craftApiRequest({
 		delete options.body;
 		delete (options.headers as IDataObject)['Content-Type'];
 	}
-	if (credential)
+	if (credential) {
 		return _this.helpers.httpRequestWithAuthentication.call(_this, 'craftApi', {
 			...options,
 		});
+	}
+
 	return _this.helpers.httpRequest.call(_this, options);
 }
 

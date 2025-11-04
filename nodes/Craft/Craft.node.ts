@@ -92,7 +92,10 @@ export class Craft implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Craft',
 		name: 'craft',
-		icon: { light: 'file:craft_logo_original.svg', dark: 'file:craft_logo_light.svg' },
+		icon: {
+			light: 'file:../../../icons/craft_logo_original.svg',
+			dark: 'file:../../../icons/craft_logo_light.svg',
+		},
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
