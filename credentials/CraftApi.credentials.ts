@@ -12,8 +12,8 @@ export class CraftApi implements ICredentialType {
 	displayName = 'Craft API';
 
 	icon: Icon = {
-		light: 'file:..//icons/craft_logo_original.svg',
-		dark: 'file:..//icons/craft_logo_light.svg',
+		light: 'file:..//images/craft_logo_original.svg',
+		dark: 'file:..//images/craft_logo_light.svg',
 	};
 
 	documentationUrl = 'https://ac-rich.craft.me/1qjRHwQqnPzlaV';

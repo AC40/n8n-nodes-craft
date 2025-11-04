@@ -93,8 +93,8 @@ export class Craft implements INodeType {
 		displayName: 'Craft',
 		name: 'craft',
 		icon: {
-			light: 'file:../../../icons/craft_logo_original.svg',
-			dark: 'file:../../../icons/craft_logo_light.svg',
+			light: 'file:../../../images/craft_logo_original.svg',
+			dark: 'file:../../../images/craft_logo_light.svg',
 		},
 		group: ['transform'],
 		version: 1,
