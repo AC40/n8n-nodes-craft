@@ -54,7 +54,17 @@ This is an n8n community node. It lets you use [Craft](https://craft.do) Docs in
 
 ## Installation
 
+### Community Node (soon to be released)
+
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+
+> This node is not published as a community node yet, currently only the self-installation is available
+
+### Private Node
+
+To run this node as a private node, follow [this](https://docs.n8n.io/integrations/creating-nodes/deploy/install-private-nodes/) guide by n8n. I also have a [prepared Dockerfile](https://github.com/AC40/custom-n8n-image) with a blank n8n installation + this craft node.
+
+Either run my custom image or build your own if you want to install additional private node.
 
 ## Operations
 
