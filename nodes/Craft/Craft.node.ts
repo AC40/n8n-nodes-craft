@@ -93,8 +93,8 @@ export class Craft implements INodeType {
 		displayName: 'Craft',
 		name: 'craft',
 		icon: {
-			light: 'file:../../../images/craft_logo_original.svg',
-			dark: 'file:../../../images/craft_logo_light.svg',
+			light: 'file:../../images/craft_logo_original.svg',
+			dark: 'file:../../images/craft_logo_light.svg',
 		},
 		group: ['transform'],
 		version: 1,
@@ -116,7 +116,7 @@ export class Craft implements INodeType {
 				if (missingDocument) {
 					return [
 						{
-							name: 'Enter a document ID first',
+							name: 'Enter a Document ID First',
 							value: '',
 						},
 					];
@@ -124,7 +124,7 @@ export class Craft implements INodeType {
 				if (!options.length) {
 					return [
 						{
-							name: 'No collections detected in document',
+							name: 'No Collections Detected in Document',
 							value: '',
 						},
 					];
