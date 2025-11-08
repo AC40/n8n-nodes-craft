@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-craft",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Unofficial n8n node for the Craft API (currently still in closed beta)",
 	"license": "MIT",
 	"homepage": "",
