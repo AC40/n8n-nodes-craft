@@ -121,7 +121,8 @@ export const collectionProperties: INodeProperties[] = [
 				name: 'allowNewSelectOptions',
 				type: 'boolean',
 				default: false,
-				description: 'Permit Craft to auto-create new select options present in the payload.',
+				description:
+					'Whether to permit Craft to auto-create new select options present in the payload',
 			},
 		],
 	},
@@ -131,7 +132,7 @@ export const collectionProperties: INodeProperties[] = [
 		type: 'json',
 		default: '[]',
 		required: true,
-		description: 'Array of items with IDs to update. Example: [{"id":"1","properties": { ... }}]',
+		description: 'Array of items with ID to update. Example: [{"ID":"1","properties": { ... }}]',
 		displayOptions: show('update'),
 	},
 	{
@@ -147,7 +148,8 @@ export const collectionProperties: INodeProperties[] = [
 				name: 'allowNewSelectOptions',
 				type: 'boolean',
 				default: false,
-				description: 'Permit Craft to auto-create new select options present in the payload.',
+				description:
+					'Whether to permit Craft to auto-create new select options present in the payload',
 			},
 		],
 	},
@@ -157,7 +159,7 @@ export const collectionProperties: INodeProperties[] = [
 		type: 'json',
 		default: '[]',
 		required: true,
-		description: 'Array of collection item IDs to delete. Example: ["1","2"]',
+		description: 'Array of collection item IDs to delete. Example: ["1","2"].',
 		displayOptions: show('delete'),
 	},
 ];
