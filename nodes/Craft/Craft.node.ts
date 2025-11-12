@@ -23,6 +23,7 @@ import { collectionCreate } from './operations/collection/collectionCreate';
 import { collectionDelete } from './operations/collection/collectionDelete';
 import { collectionList } from './operations/collection/collectionList';
 import { collectionUpdate } from './operations/collection/collectionUpdate';
+import { blockConstruct } from './operations/block/blockConstruct';
 
 const resolveCollectionOptions = async (
 	context: ILoadOptionsFunctions,
@@ -189,6 +190,10 @@ export class Craft implements INodeType {
 								break;
 							case 'search':
 								await blockSearch.call(this, index, credential, documentId, returnData);
+								break;
+							case 'validatedBlockCreate':
+								const blocks = blockConstruct.call(this, index, credential, documentId, returnData);
+								returnData.push({ blocks });
 								break;
 							default:
 								throw new NodeApiError(
