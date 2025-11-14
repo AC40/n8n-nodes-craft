@@ -23,6 +23,7 @@ import { collectionCreate } from './operations/collection/collectionCreate';
 import { collectionDelete } from './operations/collection/collectionDelete';
 import { collectionList } from './operations/collection/collectionList';
 import { collectionUpdate } from './operations/collection/collectionUpdate';
+import { blockConstruct } from './operations/block/blockConstruct';
 
 const resolveCollectionOptions = async (
 	context: ILoadOptionsFunctions,
@@ -153,6 +154,156 @@ export class Craft implements INodeType {
 				return { results };
 			},
 		},
+		resourceMapping: {
+			async getMappingColumns(this: ILoadOptionsFunctions): Promise<{ fields: any[] }> {
+				return {
+					fields: [
+						{
+							id: 'type',
+							displayName: 'Type',
+							required: true,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'options',
+							options: [
+								{ name: 'Text', value: 'text' },
+								{ name: 'Page', value: 'page' },
+								{ name: 'Image', value: 'image' },
+								{ name: 'Video', value: 'video' },
+								{ name: 'File', value: 'file' },
+								{ name: 'Drawing', value: 'drawing' },
+								{ name: 'Whiteboard', value: 'whiteboard' },
+								{ name: 'Table', value: 'table' },
+								{ name: 'Collection', value: 'collection' },
+								{ name: 'Code', value: 'code' },
+								{ name: 'Rich Link', value: 'richUrl' },
+								{ name: 'Collection Item', value: 'collectionItem' },
+							],
+						},
+						{
+							id: 'id',
+							displayName: 'Block ID',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'string',
+						},
+						{
+							id: 'markdown',
+							displayName: 'Markdown',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'string',
+						},
+						{
+							id: 'textStyle',
+							displayName: 'Text Style',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'options',
+							options: [
+								{ name: 'Body', value: 'body' },
+								{ name: 'Heading 1', value: 'h1' },
+								{ name: 'Heading 2', value: 'h2' },
+								{ name: 'Heading 3', value: 'h3' },
+								{ name: 'Heading 4', value: 'h4' },
+								{ name: 'Caption', value: 'caption' },
+								{ name: 'Card', value: 'card' },
+								{ name: 'Page', value: 'page' },
+							],
+						},
+						{
+							id: 'textAlignment',
+							displayName: 'Text Alignment',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'options',
+							options: [
+								{ name: 'Left', value: 'left' },
+								{ name: 'Center', value: 'center' },
+								{ name: 'Right', value: 'right' },
+								{ name: 'Justify', value: 'justify' },
+							],
+						},
+						{
+							id: 'font',
+							displayName: 'Font',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'options',
+							options: [
+								{ name: 'System', value: 'system' },
+								{ name: 'Serif', value: 'serif' },
+								{ name: 'Rounded', value: 'rounded' },
+								{ name: 'Mono', value: 'mono' },
+							],
+						},
+						{
+							id: 'listStyle',
+							displayName: 'List Style',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'options',
+							options: [
+								{ name: 'None', value: 'none' },
+								{ name: 'Bullet', value: 'bullet' },
+								{ name: 'Numbered', value: 'numbered' },
+								{ name: 'Toggle', value: 'toggle' },
+								{ name: 'Task', value: 'task' },
+							],
+						},
+						{
+							id: 'indentationLevel',
+							displayName: 'Indentation Level',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'number',
+						},
+						{
+							id: 'color',
+							displayName: 'Color',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'string',
+						},
+						{
+							id: 'url',
+							displayName: 'URL',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'string',
+						},
+						{
+							id: 'altText',
+							displayName: 'Alt Text',
+							required: false,
+							defaultMatch: false,
+							canBeUsedToMatch: false,
+							display: true,
+							type: 'string',
+						},
+					],
+				};
+			},
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -189,6 +340,10 @@ export class Craft implements INodeType {
 								break;
 							case 'search':
 								await blockSearch.call(this, index, credential, documentId, returnData);
+								break;
+							case 'construct':
+								const blocks = blockConstruct.call(this, index, credential, documentId, returnData);
+								returnData.push({ blocks });
 								break;
 							default:
 								throw new NodeApiError(

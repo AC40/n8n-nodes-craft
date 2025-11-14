@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-craft",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Unofficial n8n node for the Craft API (currently still in closed beta)",
 	"license": "MIT",
 	"homepage": "",
@@ -38,9 +38,6 @@
 			"dist/nodes/Craft/Craft.node.js"
 		]
 	},
-	"dependencies": {
-		"@types/node": "^24.9.2"
-	},
 	"pnpm": {
 		"peerDependencyRules": {
 			"allowedVersions": {
@@ -50,6 +47,7 @@
 	},
 	"devDependencies": {
 		"@n8n/node-cli": "*",
+		"@types/node": "^24.9.2",
 		"eslint": "9.32.0",
 		"prettier": "3.6.2",
 		"release-it": "^19.0.4",

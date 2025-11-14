@@ -7,6 +7,7 @@ import {
 	collectionOperationProperty,
 	collectionProperties,
 } from './properties/collectionProperties';
+import { blockConstructProperties } from './properties/blockConstructProperties';
 
 const documentPropery: INodeProperties = {
 	displayName: 'Document',
@@ -38,6 +39,7 @@ const operations: Array<[value: string, name: string, action: string, descriptio
 	['update', 'Update Blocks', 'Update blocks', 'Modify blocks'],
 	['move', 'Move Blocks', 'Move blocks', 'Reorder blocks in a document'],
 	['search', 'Search Blocks', 'Search blocks', 'Search content'],
+	['construct', 'Construct Blocks', 'Construct blocks', 'Construct blocks with validation'],
 ];
 
 const operationProperty: INodeProperties = {
@@ -65,4 +67,5 @@ export const craftProperties: INodeProperties[] = [
 	...blockMutationProperties,
 	...blockUploadProperties,
 	...blockSearchProperties,
+	...blockConstructProperties,
 ];
