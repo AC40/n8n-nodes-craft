@@ -9,6 +9,7 @@ import {
 } from './properties/collectionProperties';
 import { blockConstructProperties } from './properties/blockConstructProperties';
 import { taskOperationProperty, taskProperties } from './properties/taskProperties';
+import { documentOperationProperty, documentProperties } from './properties/documentProperties';
 
 const resourceProperty: INodeProperties = {
 	displayName: 'Resource',
@@ -19,6 +20,7 @@ const resourceProperty: INodeProperties = {
 		{ name: 'Block', value: 'block' },
 		{ name: 'Collection', value: 'collection' },
 		{ name: 'Task', value: 'task' },
+		{ name: 'Document', value: 'document' },
 	],
 	default: 'block',
 };
@@ -54,8 +56,10 @@ export const craftProperties: INodeProperties[] = [
 	operationProperty,
 	collectionOperationProperty,
 	taskOperationProperty,
+	documentOperationProperty,
 	...collectionProperties,
 	...taskProperties,
+	...documentProperties,
 	...blockFetchProperties,
 	...blockMutationProperties,
 	...blockUploadProperties,

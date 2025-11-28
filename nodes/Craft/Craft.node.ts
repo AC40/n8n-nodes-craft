@@ -29,6 +29,7 @@ import { taskList } from './operations/task/taskList';
 import { taskCreate } from './operations/task/taskCreate';
 import { taskUpdate } from './operations/task/taskUpdate';
 import { taskDelete } from './operations/task/taskDelete';
+import { documentFetch } from './operations/document/documentFetch';
 
 const resolveCollectionOptions = async (
 	context: ILoadOptionsFunctions,
@@ -88,6 +89,56 @@ const resolveCollectionOptions = async (
 	}
 
 	return { options, missingDocument: false };
+};
+
+const WRITE_OPERATIONS: Record<string, Set<string>> = {
+	block: new Set(['insert', 'upload', 'update', 'delete', 'move']),
+	collection: new Set(['create', 'update', 'delete']),
+	task: new Set(['create', 'update', 'delete']),
+	document: new Set(),
+};
+
+const getOperationCategory = (resource: string, operation: string): 'read' | 'write' => {
+	if (WRITE_OPERATIONS[resource]?.has(operation)) return 'write';
+	return 'read';
+};
+
+type ConnectionMode = 'document' | 'tasks';
+
+const WRITE_ONLY_ALLOWED: Record<ConnectionMode, Record<string, Set<string>>> = {
+	document: {
+		block: new Set(['insert']),
+		document: new Set(['fetch']),
+		collection: new Set(['list', 'create']),
+	},
+	tasks: {
+		block: new Set(['insert']),
+		task: new Set(['create']),
+		collection: new Set(['list', 'create']),
+	},
+};
+
+const isOperationAllowed = (
+	connectionType: ConnectionMode,
+	permissionLevel: string,
+	resource: string,
+	operation: string,
+): boolean => {
+	if (permissionLevel === 'readWrite') return true;
+	if (permissionLevel === 'read') return getOperationCategory(resource, operation) === 'read';
+	if (permissionLevel === 'write') {
+		const allowed = WRITE_ONLY_ALLOWED[connectionType]?.[resource];
+		return allowed?.has(operation) ?? false;
+	}
+	return true;
+};
+
+const describeWriteOnlyAllowed = (connectionType: ConnectionMode) => {
+	const entries = Object.entries(WRITE_ONLY_ALLOWED[connectionType] ?? {}).filter(
+		([, ops]) => ops.size,
+	);
+	if (!entries.length) return 'none';
+	return entries.map(([res, ops]) => `${res}: ${Array.from(ops).join(', ')}`).join('; ');
 };
 
 export class Craft implements INodeType {
@@ -329,10 +380,46 @@ export class Craft implements INodeType {
 			);
 		}
 
+		const connectionType: ConnectionMode =
+			(credential.connectionType as string) === 'tasks' ? 'tasks' : 'document';
+		const permissionLevel = (credential.permissions as string) || 'readWrite';
+
 		for (let index = 0; index < items.length; index++) {
 			try {
 				const resource = this.getNodeParameter('resource', index) as string;
 				const operation = this.getNodeParameter('operation', index) as string;
+
+				if (resource === 'task' && connectionType === 'document') {
+					throw new NodeApiError(
+						this.getNode(),
+						{
+							message:
+								'Tasks resource is only available for Daily Notes API credentials. Provide a Tasks/Daily Notes credential to continue.',
+						},
+						{ itemIndex: index },
+					);
+				}
+				if (resource === 'document' && connectionType === 'tasks') {
+					throw new NodeApiError(
+						this.getNode(),
+						{
+							message:
+								'Document resource is only available for Document API credentials. Provide a Document credential to continue.',
+						},
+						{ itemIndex: index },
+					);
+				}
+
+				if (!isOperationAllowed(connectionType, permissionLevel, resource, operation)) {
+					let message = 'Operation blocked by credential permissions.';
+					if (permissionLevel === 'read') {
+						message = `The "${operation}" operation requires write permissions. Update the credential permissions or pick a read-only action.`;
+					} else if (permissionLevel === 'write') {
+						const allowedDescription = describeWriteOnlyAllowed(connectionType);
+						message = `This credential is write-only. Allowed operations: ${allowedDescription}.`;
+					}
+					throw new NodeApiError(this.getNode(), { message }, { itemIndex: index });
+				}
 
 				switch (resource) {
 					case 'block': {
@@ -413,6 +500,20 @@ export class Craft implements INodeType {
 								throw new NodeApiError(
 									this.getNode(),
 									{ message: `Unsupported task operation "${operation}".` },
+									{ itemIndex: index },
+								);
+						}
+						continue;
+					}
+					case 'document': {
+						switch (operation) {
+							case 'fetch':
+								await documentFetch.call(this, index, credential, documentId, returnData);
+								break;
+							default:
+								throw new NodeApiError(
+									this.getNode(),
+									{ message: `Unsupported document operation "${operation}".` },
 									{ itemIndex: index },
 								);
 						}
