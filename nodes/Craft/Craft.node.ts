@@ -25,20 +25,20 @@ import { collectionDelete } from './operations/collection/collectionDelete';
 import { collectionList } from './operations/collection/collectionList';
 import { collectionUpdate } from './operations/collection/collectionUpdate';
 import { blockConstruct } from './operations/block/blockConstruct';
+import { taskList } from './operations/task/taskList';
+import { taskCreate } from './operations/task/taskCreate';
+import { taskUpdate } from './operations/task/taskUpdate';
+import { taskDelete } from './operations/task/taskDelete';
 
 const resolveCollectionOptions = async (
 	context: ILoadOptionsFunctions,
 ): Promise<{ options: INodePropertyOptions[]; missingDocument: boolean }> => {
-	let documentId = '';
-	try {
-		documentId = (context.getNodeParameter('documentId', 0) as string) || '';
-	} catch {
-		return { options: [], missingDocument: true };
-	}
-	documentId = documentId.trim();
-	if (!documentId) return { options: [], missingDocument: true };
-
 	const credential = await context.getCredentials('craftApi').catch(() => null);
+
+	if (!credential) return { options: [], missingDocument: true };
+
+	const documentId = (credential.documentId as string)?.trim();
+	if (!documentId) return { options: [], missingDocument: true };
 
 	let response: unknown;
 	try {
@@ -105,7 +105,7 @@ export class Craft implements INodeType {
 		defaults: { name: 'Craft' },
 		inputs: ['main'],
 		outputs: ['main'],
-		credentials: [{ name: 'craftApi', required: false }],
+		credentials: [{ name: 'craftApi', required: true }],
 		usableAsTool: true,
 		documentationUrl: 'https://docs.n8n.io/integrations/custom-nodes/',
 		properties: craftProperties,
@@ -310,13 +310,29 @@ export class Craft implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
-		const credential = await this.getCredentials('craftApi').catch(() => null);
+		const credential = await this.getCredentials('craftApi');
+
+		if (!credential) {
+			throw new NodeApiError(
+				this.getNode(),
+				{ message: 'Craft API credential is required' },
+				{ itemIndex: 0 },
+			);
+		}
+
+		const documentId = (credential.documentId as string).trim();
+		if (!documentId) {
+			throw new NodeApiError(
+				this.getNode(),
+				{ message: 'Document ID is missing from the Craft API credential' },
+				{ itemIndex: 0 },
+			);
+		}
 
 		for (let index = 0; index < items.length; index++) {
 			try {
 				const resource = this.getNodeParameter('resource', index) as string;
 				const operation = this.getNodeParameter('operation', index) as string;
-				const documentId = this.getNodeParameter('documentId', index) as string;
 
 				switch (resource) {
 					case 'block': {
@@ -374,6 +390,29 @@ export class Craft implements INodeType {
 								throw new NodeApiError(
 									this.getNode(),
 									{ message: `Unsupported collection operation "${operation}".` },
+									{ itemIndex: index },
+								);
+						}
+						continue;
+					}
+					case 'task': {
+						switch (operation) {
+							case 'list':
+								await taskList.call(this, index, credential, documentId, returnData);
+								break;
+							case 'create':
+								await taskCreate.call(this, index, credential, documentId, returnData);
+								break;
+							case 'update':
+								await taskUpdate.call(this, index, credential, documentId, returnData);
+								break;
+							case 'delete':
+								await taskDelete.call(this, index, credential, documentId, returnData);
+								break;
+							default:
+								throw new NodeApiError(
+									this.getNode(),
+									{ message: `Unsupported task operation "${operation}".` },
 									{ itemIndex: index },
 								);
 						}

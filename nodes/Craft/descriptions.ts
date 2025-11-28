@@ -8,16 +8,7 @@ import {
 	collectionProperties,
 } from './properties/collectionProperties';
 import { blockConstructProperties } from './properties/blockConstructProperties';
-
-const documentPropery: INodeProperties = {
-	displayName: 'Document',
-	name: 'documentId',
-	type: 'string',
-	default: '',
-	description:
-		'ID of the document to work with. Usually an 11-character string between "https://connect.craft.do/link/" and "/docs/v1".',
-	required: true,
-};
+import { taskOperationProperty, taskProperties } from './properties/taskProperties';
 
 const resourceProperty: INodeProperties = {
 	displayName: 'Resource',
@@ -27,6 +18,7 @@ const resourceProperty: INodeProperties = {
 	options: [
 		{ name: 'Block', value: 'block' },
 		{ name: 'Collection', value: 'collection' },
+		{ name: 'Task', value: 'task' },
 	],
 	default: 'block',
 };
@@ -58,11 +50,12 @@ const operationProperty: INodeProperties = {
 };
 
 export const craftProperties: INodeProperties[] = [
-	documentPropery,
 	resourceProperty,
 	operationProperty,
 	collectionOperationProperty,
+	taskOperationProperty,
 	...collectionProperties,
+	...taskProperties,
 	...blockFetchProperties,
 	...blockMutationProperties,
 	...blockUploadProperties,
