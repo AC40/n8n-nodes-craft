@@ -1,0 +1,33 @@
+# TypeScript Strict Mode & Type Rules
+
+## Strict Mode (Enforced)
+TypeScript strict mode is **enabled** in `tsconfig.json` with the following requirements:
+
+- All functions must have **explicit return types**
+- No implicit `any` types (`noImplicitAny: true`)
+- Strict null checks enabled (`strictNullChecks: true`)
+- No unused locals or variables (`noUnusedLocals: true`)
+- All variables must be used
+- Consistent casing in filenames (`forceConsistentCasingInFileNames: true`)
+
+## Type Imports
+Always use `import type` for type-only imports:
+
+```typescript
+import type { IDataObject, IExecuteFunctions, INodeType } from 'n8n-workflow';
+```
+
+Group type imports separately from value imports.
+
+## Target Configuration
+- **Target**: ES2019
+- **Module**: CommonJS
+- **Lib**: ES2019, ES2020, ES2022.error
+- **Source Maps**: Enabled for debugging
+- **Declarations**: Generated `.d.ts` files
+
+## Error Handling
+- Use `NodeApiError` from `n8n-workflow` for API errors
+- Always include error context with item index: `{ itemIndex: index }`
+- Use try-catch blocks for async operations
+- Always log errors to console before throwing

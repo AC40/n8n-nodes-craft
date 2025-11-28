@@ -1,5 +1,4 @@
-import { IExecuteFunctions, ICredentialDataDecryptedObject, IDataObject } from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { IExecuteFunctions, IDataObject, NodeApiError } from 'n8n-workflow';
 import { parseParameter } from '../../helpers';
 
 function buildBlockFromFields(blockFields: IDataObject): IDataObject {
@@ -60,9 +59,6 @@ function buildBlockFromFields(blockFields: IDataObject): IDataObject {
 export function blockConstruct(
 	this: IExecuteFunctions,
 	index: number,
-	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
-	returnData: IDataObject[],
 ): string {
 	const inputMode = (this.getNodeParameter('inputDataMode', index, 'json') as string) || 'json';
 
@@ -78,7 +74,7 @@ export function blockConstruct(
 		if (items.length === 0) {
 			blocks = [];
 		} else {
-			blocks = items.map((item, itemIndex) => {
+			blocks = items.map((item) => {
 				const mappedFields: IDataObject = {};
 
 				if (columnsData.mappingMode === 'autoMapInputData') {

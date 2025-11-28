@@ -1,0 +1,8 @@
+# @n8n-nodes-craft Project Overview
+
+n8n community node package for the Craft API. Unofficial integration providing block and collection operations for Craft documents.
+
+**Repository**: https://github.com/ac40/n8n-nodes-craft.git
+**Version**: 0.1.1
+**Package Manager**: pnpm 9.0.0+
+**License**: MIT

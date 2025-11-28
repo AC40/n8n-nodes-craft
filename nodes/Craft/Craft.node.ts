@@ -8,6 +8,7 @@ import type {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	ResourceMapperFields,
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 import { craftProperties } from './descriptions';
@@ -155,7 +156,7 @@ export class Craft implements INodeType {
 			},
 		},
 		resourceMapping: {
-			async getMappingColumns(this: ILoadOptionsFunctions): Promise<{ fields: any[] }> {
+			async getMappingColumns(this: ILoadOptionsFunctions): Promise<ResourceMapperFields> {
 				return {
 					fields: [
 						{
@@ -341,10 +342,11 @@ export class Craft implements INodeType {
 							case 'search':
 								await blockSearch.call(this, index, credential, documentId, returnData);
 								break;
-							case 'construct':
-								const blocks = blockConstruct.call(this, index, credential, documentId, returnData);
+							case 'construct': {
+								const blocks = blockConstruct.call(this, index);
 								returnData.push({ blocks });
 								break;
+							}
 							default:
 								throw new NodeApiError(
 									this.getNode(),

@@ -1,0 +1,71 @@
+# n8n Node Development Standards
+
+## Node Structure
+
+### Main Node Implementation (Craft.node.ts)
+- Implements `INodeType` interface
+- Defines `description: INodeTypeDescription` with:
+  - Display name, icon (light/dark), documentation URL
+  - Group, version, subtitle, and inputs/outputs
+  - Properties list
+  - Credentials configuration
+  - `usableAsTool: true` for AI tool compatibility
+
+### Credential File (CraftApi.credentials.ts)
+- Handles API authentication
+- Provides credential validation and configuration
+
+## Operation Functions
+Each operation is a separate async function with signature:
+```typescript
+(this: IExecuteFunctions, index: number, credential, documentId, returnData)
+```
+
+Operations:
+- **Block**: construct, delete, fetch, insert, move, search, update, upload
+- **Collection**: create, delete, list, update
+
+## Methods Object
+The node implements these methods:
+
+### loadOptions
+- `getCollections()` - Fetch available collections from document
+
+### listSearch
+- `searchCollections()` - Filter collections by text
+
+### resourceMapping
+- `getMappingColumns()` - Define block property schema for resource mapper
+
+## Execute Method
+The main execution method routes requests to operations:
+- Gets input data items
+- Retrieves credentials
+- Switches on resource (block/collection)
+- Switches on operation type
+- Calls appropriate operation handler
+- Accumulates results in `returnData: IDataObject[]`
+- Returns formatted data: `this.helpers.returnJsonArray(returnData)`
+
+## API Requests
+Use the `craftApiRequest` helper for all API calls:
+
+```typescript
+const response = await craftApiRequest({
+	_this: context,
+	credential,
+	documentId,
+	method: 'GET',
+	endpoint: '/blocks',
+	body: {},
+	qs: {},
+	headers: {},
+	json: true,
+});
+```
+
+## Return Data Format
+- Accumulate results in `returnData: IDataObject[]`
+- Each operation pushes results to this array
+- Final return: `this.helpers.returnJsonArray(returnData)`
+- Always wrap items in the main output array: `[this.helpers.returnJsonArray(returnData)]`

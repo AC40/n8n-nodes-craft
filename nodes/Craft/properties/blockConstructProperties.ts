@@ -1,11 +1,11 @@
 import type { INodeProperties } from 'n8n-workflow';
 
-const show = (operation: string | string[]) => ({
+const show = {
 	show: {
 		resource: ['block'],
 		operation: ['construct'],
 	},
-});
+};
 
 export const blockConstructProperties: INodeProperties[] = [
 	{
@@ -13,12 +13,12 @@ export const blockConstructProperties: INodeProperties[] = [
 		name: 'inputDataMode',
 		type: 'options',
 		options: [
-			{ name: 'Define using fields below', value: 'fields' },
-			{ name: 'Define using JSON example', value: 'json' },
+			{ name: 'Define Using Fields Below', value: 'fields' },
+			{ name: 'Define Using JSON Example', value: 'json' },
 		],
 		default: 'fields',
 		description: 'Choose how to input block data',
-		displayOptions: show('construct'),
+		displayOptions: show,
 	},
 	{
 		displayName: 'Blocks',

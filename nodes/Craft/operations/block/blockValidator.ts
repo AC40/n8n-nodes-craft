@@ -1,7 +1,21 @@
-import { IExecuteFunctions, NodeApiError } from 'n8n-workflow';
+import { IExecuteFunctions, NodeApiError, IDataObject } from 'n8n-workflow';
 import { blockSchema } from './blockSchema';
 
-function validateValue(value: unknown, schema: any, path: string): string[] {
+type SchemaType = IDataObject & {
+	type?: string;
+	enum?: unknown[];
+	pattern?: string;
+	minimum?: number;
+	maximum?: number;
+	format?: string;
+	required?: string[];
+	properties?: Record<string, unknown>;
+	items?: unknown;
+	additionalProperties?: boolean;
+	anyOf?: unknown[];
+};
+
+function validateValue(value: unknown, schema: SchemaType, path: string): string[] {
 	const errors: string[] = [];
 
 	if (schema.type) {
@@ -23,22 +37,32 @@ function validateValue(value: unknown, schema: any, path: string): string[] {
 		}
 	}
 
-	if (schema.enum && !schema.enum.includes(value)) {
+	if (schema.enum && Array.isArray(schema.enum) && !schema.enum.includes(value)) {
 		errors.push(`${path}: value must be one of ${schema.enum.join(', ')}`);
 	}
 
-	if (schema.pattern && typeof value === 'string') {
+	if (schema.pattern && typeof schema.pattern === 'string' && typeof value === 'string') {
 		const regex = new RegExp(schema.pattern);
 		if (!regex.test(value)) {
 			errors.push(`${path}: value does not match pattern ${schema.pattern}`);
 		}
 	}
 
-	if (schema.minimum !== undefined && typeof value === 'number' && value < schema.minimum) {
+	if (
+		schema.minimum !== undefined &&
+		typeof schema.minimum === 'number' &&
+		typeof value === 'number' &&
+		value < schema.minimum
+	) {
 		errors.push(`${path}: value must be >= ${schema.minimum}`);
 	}
 
-	if (schema.maximum !== undefined && typeof value === 'number' && value > schema.maximum) {
+	if (
+		schema.maximum !== undefined &&
+		typeof schema.maximum === 'number' &&
+		typeof value === 'number' &&
+		value > schema.maximum
+	) {
 		errors.push(`${path}: value must be <= ${schema.maximum}`);
 	}
 
@@ -52,7 +76,7 @@ function validateValue(value: unknown, schema: any, path: string): string[] {
 	return errors;
 }
 
-function validateObject(obj: unknown, schema: any, path: string): string[] {
+function validateObject(obj: unknown, schema: SchemaType, path: string): string[] {
 	const errors: string[] = [];
 
 	if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
@@ -61,27 +85,34 @@ function validateObject(obj: unknown, schema: any, path: string): string[] {
 
 	const objRecord = obj as Record<string, unknown>;
 
-	if (schema.required) {
+	if (schema.required && Array.isArray(schema.required)) {
 		for (const field of schema.required) {
-			if (!(field in objRecord)) {
+			if (typeof field === 'string' && !(field in objRecord)) {
 				errors.push(`${path}: missing required field '${field}'`);
 			}
 		}
 	}
 
-	if (schema.properties) {
+	if (schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties)) {
 		for (const [key, value] of Object.entries(objRecord)) {
 			const fieldSchema = schema.properties[key];
-			if (fieldSchema) {
+			if (fieldSchema && typeof fieldSchema === 'object' && !Array.isArray(fieldSchema)) {
 				const fieldPath = path ? `${path}.${key}` : key;
-				errors.push(...validateValue(value, fieldSchema, fieldPath));
+				errors.push(...validateValue(value, fieldSchema as SchemaType, fieldPath));
 				if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-					errors.push(...validateAgainstSchema(value, fieldSchema, fieldPath));
-				} else if (Array.isArray(value) && fieldSchema.items) {
-					for (let i = 0; i < value.length; i++) {
-						errors.push(
-							...validateAgainstSchema(value[i], fieldSchema.items, `${fieldPath}[${i}]`),
-						);
+					errors.push(...validateAgainstSchema(value, fieldSchema as SchemaType, fieldPath));
+				} else if (Array.isArray(value)) {
+					const fieldSchemaTyped = fieldSchema as SchemaType;
+					if (fieldSchemaTyped.items) {
+						for (let i = 0; i < value.length; i++) {
+							errors.push(
+								...validateAgainstSchema(
+									value[i],
+									fieldSchemaTyped.items as SchemaType,
+									`${fieldPath}[${i}]`,
+								),
+							);
+						}
 					}
 				}
 			} else if (schema.additionalProperties === false) {
@@ -93,15 +124,17 @@ function validateObject(obj: unknown, schema: any, path: string): string[] {
 	return errors;
 }
 
-function validateAgainstSchema(value: unknown, schema: any, path: string): string[] {
-	if (schema.anyOf) {
+function validateAgainstSchema(value: unknown, schema: SchemaType, path: string): string[] {
+	if (schema.anyOf && Array.isArray(schema.anyOf)) {
 		const allErrors: string[] = [];
 		for (const subSchema of schema.anyOf) {
-			const subErrors = validateAgainstSchema(value, subSchema, path);
-			if (subErrors.length === 0) {
-				return [];
+			if (typeof subSchema === 'object' && subSchema !== null && !Array.isArray(subSchema)) {
+				const subErrors = validateAgainstSchema(value, subSchema as SchemaType, path);
+				if (subErrors.length === 0) {
+					return [];
+				}
+				allErrors.push(...subErrors);
 			}
-			allErrors.push(...subErrors);
 		}
 		return allErrors;
 	}
@@ -119,9 +152,11 @@ function validateAgainstSchema(value: unknown, schema: any, path: string): strin
 	}
 
 	if (schema.type === 'array' && Array.isArray(value)) {
-		if (schema.items) {
+		if (schema.items && typeof schema.items === 'object' && !Array.isArray(schema.items)) {
 			for (let i = 0; i < value.length; i++) {
-				errors.push(...validateAgainstSchema(value[i], schema.items, `${path}[${i}]`));
+				errors.push(
+					...validateAgainstSchema(value[i], schema.items as SchemaType, `${path}[${i}]`),
+				);
 			}
 		}
 	}
@@ -140,7 +175,7 @@ export function validateBlockData(this: IExecuteFunctions, data: unknown): unkno
 
 	for (let i = 0; i < data.length; i++) {
 		const block = data[i];
-		const errors = validateAgainstSchema(block, blockSchema, `block[${i}]`);
+		const errors = validateAgainstSchema(block, blockSchema as unknown as SchemaType, `block[${i}]`);
 		if (errors.length > 0) {
 			allErrors.push(...errors);
 		}

@@ -1,0 +1,42 @@
+# Code Quality Standards
+
+## General Standards
+- No unused imports or variables (enforced by strict TypeScript config)
+- Consistent error handling with proper context
+- Type safety throughout codebase
+- Clean, focused functions with single responsibility
+- Use `Set`/`Map` for deduplication when needed
+- Handle edge cases (null checks, empty arrays, etc.)
+
+## Error Handling Pattern
+```typescript
+try {
+	// operation code
+} catch (error) {
+	console.error('Failed to fetch collections', error);
+	throw new NodeApiError(this.getNode(), error, { itemIndex: index });
+}
+```
+
+## Data Validation
+- Check for missing required parameters
+- Validate API responses before processing
+- Handle undefined/null values safely
+- Use type guards for type narrowing
+
+## Loop & Recursion
+- Use clear variable names in loops (e.g., `index`, `entry`)
+- Document recursive functions
+- Prevent infinite loops with base cases
+- Use functional approaches (map, filter) when appropriate
+
+## Performance
+- Avoid N+1 queries
+- Cache repeated computations
+- Use early returns to reduce nesting
+- Keep functions focused and under 150 lines
+
+## Testing
+- All changes should pass linting: `pnpm lint`
+- Build should succeed: `pnpm build`
+- Watch mode for development: `pnpm build:watch`
