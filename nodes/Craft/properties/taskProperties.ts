@@ -112,16 +112,16 @@ export const taskProperties: INodeProperties[] = [
 			{
 				displayName: 'Schedule Date',
 				name: 'scheduleDate',
-				type: 'string',
+				type: 'dateTime',
 				default: '',
-				description: 'ISO date (YYYY-MM-DD) or relative date (today, tomorrow, yesterday)',
+				description: 'Choose a schedule date (defaults to ISO format)',
 			},
 			{
 				displayName: 'Deadline Date',
 				name: 'deadlineDate',
-				type: 'string',
+				type: 'dateTime',
 				default: '',
-				description: 'ISO date (YYYY-MM-DD) or relative date (today, tomorrow, yesterday)',
+				description: 'Choose a deadline date (defaults to ISO format)',
 			},
 		],
 	},
@@ -153,7 +153,7 @@ export const taskProperties: INodeProperties[] = [
 				displayName: 'State',
 				name: 'state',
 				type: 'options',
-				default: '',
+				default: 'todo',
 				description: 'Task state',
 				options: [
 					{
@@ -173,16 +173,16 @@ export const taskProperties: INodeProperties[] = [
 			{
 				displayName: 'Schedule Date',
 				name: 'scheduleDate',
-				type: 'string',
+				type: 'dateTime',
 				default: '',
-				description: 'ISO date (YYYY-MM-DD) or relative date (today, tomorrow, yesterday)',
+				description: 'Choose a schedule date (defaults to ISO format)',
 			},
 			{
 				displayName: 'Deadline Date',
 				name: 'deadlineDate',
-				type: 'string',
+				type: 'dateTime',
 				default: '',
-				description: 'ISO date (YYYY-MM-DD) or relative date (today, tomorrow, yesterday)',
+				description: 'Choose a deadline date (defaults to ISO format)',
 			},
 		],
 	},
@@ -192,9 +192,7 @@ export const taskProperties: INodeProperties[] = [
 		type: 'string',
 		default: '',
 		required: true,
-		description:
-			'Task IDs to delete (comma-separated string or array of IDs for multiple)',
+		description: 'Task IDs to delete (comma-separated string or array of IDs for multiple)',
 		displayOptions: show('delete'),
 	},
 ];
-
