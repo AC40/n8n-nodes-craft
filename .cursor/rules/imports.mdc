@@ -1,9 +1,11 @@
 # Import Organization
 
 ## Import Order
+
 Follow this strict order in all files:
 
 1. **Type imports from n8n-workflow**
+
 ```typescript
 import type {
 	IDataObject,
@@ -17,17 +19,20 @@ import type {
 ```
 
 2. **Value imports from n8n-workflow**
+
 ```typescript
 import { NodeApiError } from 'n8n-workflow';
 ```
 
 3. **Local module imports (helpers, descriptions)**
+
 ```typescript
 import { craftProperties } from './descriptions';
 import { craftApiRequest, toCollectionSlug } from './helpers';
 ```
 
 4. **Operation imports**
+
 ```typescript
 import { blockDelete } from './operations/block/blockDelete';
 import { blockFetch } from './operations/block/blockFetch';
@@ -35,12 +40,14 @@ import { blockInsert } from './operations/block/blockInsert';
 ```
 
 5. **Collection operation imports**
+
 ```typescript
 import { collectionCreate } from './operations/collection/collectionCreate';
 import { collectionDelete } from './operations/collection/collectionDelete';
 ```
 
 ## Rules
+
 - Always use `import type` for type-only imports
 - Group imports logically
 - No wildcard imports (`import * as X`)

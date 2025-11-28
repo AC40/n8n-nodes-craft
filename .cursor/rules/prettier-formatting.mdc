@@ -3,6 +3,7 @@
 All code must conform to the project's Prettier configuration.
 
 ## Formatting Rules
+
 - **Indentation**: Tabs (tabWidth: 2)
 - **Quotes**: Single quotes
 - **Semicolons**: Required
@@ -13,5 +14,6 @@ All code must conform to the project's Prettier configuration.
 - **Line Endings**: LF
 
 ## Run Format Commands
+
 - Format code: `pnpm lint:fix`
 - Check formatting: `pnpm lint`

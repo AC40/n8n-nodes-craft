@@ -1,12 +1,14 @@
 # Comments & Documentation
 
 ## JSDoc Guidelines
+
 - Use JSDoc comments **only when needed for clarity**
 - Only add comments for **complex logic or non-obvious implementations**
 - No markdown documentation files or unnecessary inline comments
 - No over-documentation
 
 ## Comment Style
+
 Use simple inline comments for clarity:
 
 ```typescript
@@ -17,4 +19,5 @@ const walk = (nodes: unknown): void => {
 ```
 
 ## Documentation Preference
+
 Prefer clear, self-documenting code over excessive comments. Variable and function names should be descriptive enough to understand intent.

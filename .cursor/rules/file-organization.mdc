@@ -3,6 +3,7 @@
 ## Directory Structure
 
 ### Operations Layout
+
 Each resource operation is in its own file under `operations/{resource}/{operation}.ts`:
 
 ```
@@ -27,6 +28,7 @@ operations/
 ```
 
 ### Properties Layout
+
 Configuration properties under `properties/{resource}Properties.ts`:
 
 ```
@@ -40,12 +42,14 @@ properties/
 ```
 
 ### Root Helpers
+
 - `Craft.node.ts` - Main node implementation
 - `descriptions.ts` - Craft node property descriptions
 - `helpers.ts` - Shared utility functions like `craftApiRequest`
 - `mime.ts` - MIME type utilities
 
 ## File Size Limits
+
 - Keep files **under 150 lines** when possible
 - Split large files into smaller, focused modules
 - Extract helper functions to separate files

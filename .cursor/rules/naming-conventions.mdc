@@ -1,21 +1,27 @@
 # File & Code Naming Conventions
 
 ## File Naming
+
 - All file names must be **lowercase**
 - Use camelCase for multi-word files (e.g., `blockConstruct.ts`, `blockFetchProperties.ts`)
 - Exceptions: Credential files use PascalCase (e.g., `CraftApi.credentials.ts`)
 
 ### Operation File Pattern
+
 Files under `operations/{resource}/{operationType}.ts`:
+
 - `blockConstruct.ts`, `blockDelete.ts`, `blockFetch.ts`, `blockInsert.ts`
 - `collectionCreate.ts`, `collectionDelete.ts`, `collectionUpdate.ts`
 
 ### Property File Pattern
+
 Files under `properties/{resource}Properties.ts`:
+
 - `blockConstructProperties.ts`, `blockFetchProperties.ts`, `blockMutationProperties.ts`
 - `collectionProperties.ts`
 
 ## Code Naming
+
 - **Variables & Functions**: camelCase (e.g., `documentId`, `craftApiRequest`, `resolveCollectionOptions`)
 - **Classes**: PascalCase (e.g., `Craft`)
 - **Type Names**: PascalCase with I prefix for interfaces (e.g., `INodeType`, `IExecuteFunctions`, `IDataObject`)

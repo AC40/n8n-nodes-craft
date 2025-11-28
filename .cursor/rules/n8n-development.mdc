@@ -3,6 +3,7 @@
 ## Node Structure
 
 ### Main Node Implementation (Craft.node.ts)
+
 - Implements `INodeType` interface
 - Defines `description: INodeTypeDescription` with:
   - Display name, icon (light/dark), documentation URL
@@ -12,33 +13,43 @@
   - `usableAsTool: true` for AI tool compatibility
 
 ### Credential File (CraftApi.credentials.ts)
+
 - Handles API authentication
 - Provides credential validation and configuration
 
 ## Operation Functions
+
 Each operation is a separate async function with signature:
+
 ```typescript
 (this: IExecuteFunctions, index: number, credential, documentId, returnData)
 ```
 
 Operations:
+
 - **Block**: construct, delete, fetch, insert, move, search, update, upload
 - **Collection**: create, delete, list, update
 
 ## Methods Object
+
 The node implements these methods:
 
 ### loadOptions
+
 - `getCollections()` - Fetch available collections from document
 
 ### listSearch
+
 - `searchCollections()` - Filter collections by text
 
 ### resourceMapping
+
 - `getMappingColumns()` - Define block property schema for resource mapper
 
 ## Execute Method
+
 The main execution method routes requests to operations:
+
 - Gets input data items
 - Retrieves credentials
 - Switches on resource (block/collection)
@@ -48,6 +59,7 @@ The main execution method routes requests to operations:
 - Returns formatted data: `this.helpers.returnJsonArray(returnData)`
 
 ## API Requests
+
 Use the `craftApiRequest` helper for all API calls:
 
 ```typescript
@@ -65,6 +77,7 @@ const response = await craftApiRequest({
 ```
 
 ## Return Data Format
+
 - Accumulate results in `returnData: IDataObject[]`
 - Each operation pushes results to this array
 - Final return: `this.helpers.returnJsonArray(returnData)`
