@@ -73,7 +73,7 @@ export const dailyNoteProperties: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'Date of the daily note to search (YYYY-MM-DD or relative date).',
+		description: 'Date of the daily note to search (YYYY-MM-DD or relative date)',
 		displayOptions: { show: blockSearchDisplay },
 	},
 	{
@@ -106,7 +106,7 @@ export const dailyNoteProperties: INodeProperties[] = [
 				name: 'beforeBlockCount',
 				type: 'number',
 				default: 5,
-				description: 'Number of blocks to include before the match (default 5).',
+				description: 'Number of blocks to include before the match (default 5)',
 				typeOptions: { minValue: 0 },
 			},
 			{
@@ -114,7 +114,7 @@ export const dailyNoteProperties: INodeProperties[] = [
 				name: 'afterBlockCount',
 				type: 'number',
 				default: 5,
-				description: 'Number of blocks to include after the match (default 5).',
+				description: 'Number of blocks to include after the match (default 5)',
 				typeOptions: { minValue: 0 },
 			},
 		],

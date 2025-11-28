@@ -81,7 +81,7 @@ The node now supports multiple Craft resources and their specific operations.
 - Delete blocks from a document
 - Update blocks to change existing content
 - Move blocks to reorder content
-- Search blocks when you need query-based results
+- Search blocks in a document
 - Construct blocks with validation before sending them to Craft
 
 ### Collections
@@ -106,7 +106,7 @@ The node now supports multiple Craft resources and their specific operations.
 ### Daily Notes
 
 - Search daily notes with keyword and date filters
-- Serach single daily note
+- Search a single daily note
 
 ## Credentials
 

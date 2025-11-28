@@ -20,9 +20,9 @@ const resourceProperty: INodeProperties = {
 	options: [
 		{ name: 'Block', value: 'block' },
 		{ name: 'Collection', value: 'collection' },
-		{ name: 'Task', value: 'task' },
-		{ name: 'Document', value: 'document' },
 		{ name: 'Daily Note', value: 'dailyNote' },
+		{ name: 'Document', value: 'document' },
+		{ name: 'Task', value: 'task' },
 	],
 	default: 'block',
 };

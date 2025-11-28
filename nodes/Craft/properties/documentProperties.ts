@@ -61,7 +61,7 @@ export const documentProperties: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'Comma-separated search terms to include in the search.',
+		description: 'Comma-separated search terms to include in the search',
 		displayOptions: show('search'),
 	},
 	{
@@ -77,7 +77,7 @@ export const documentProperties: INodeProperties[] = [
 				name: 'documentIds',
 				type: 'string',
 				default: '',
-				description: 'Comma-separated document IDs to include or exclude from the search.',
+				description: 'Comma-separated document IDs to include or exclude from the search',
 			},
 			{
 				displayName: 'Filter Mode',
@@ -88,7 +88,7 @@ export const documentProperties: INodeProperties[] = [
 					{ name: 'Include', value: 'include' },
 					{ name: 'Exclude', value: 'exclude' },
 				],
-				description: 'Whether to include or exclude the listed document IDs.',
+				description: 'Whether to include or exclude the listed document IDs',
 			},
 		],
 	},
