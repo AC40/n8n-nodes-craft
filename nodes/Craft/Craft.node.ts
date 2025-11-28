@@ -30,6 +30,9 @@ import { taskCreate } from './operations/task/taskCreate';
 import { taskUpdate } from './operations/task/taskUpdate';
 import { taskDelete } from './operations/task/taskDelete';
 import { documentFetch } from './operations/document/documentFetch';
+import { documentSearch } from './operations/document/documentSearch';
+import { dailyNoteSearch } from './operations/dailyNote/dailyNoteSearch';
+import { dailyNoteBlockSearch } from './operations/dailyNote/dailyNoteBlockSearch';
 
 const resolveCollectionOptions = async (
 	context: ILoadOptionsFunctions,
@@ -409,6 +412,16 @@ export class Craft implements INodeType {
 						{ itemIndex: index },
 					);
 				}
+				if (resource === 'dailyNote' && connectionType === 'document') {
+					throw new NodeApiError(
+						this.getNode(),
+						{
+							message:
+								'Daily Note resource is only available for Daily Notes API credentials. Provide a Daily Notes credential to continue.',
+						},
+						{ itemIndex: index },
+					);
+				}
 
 				if (!isOperationAllowed(connectionType, permissionLevel, resource, operation)) {
 					let message = 'Operation blocked by credential permissions.';
@@ -416,7 +429,7 @@ export class Craft implements INodeType {
 						message = `The "${operation}" operation requires write permissions. Update the credential permissions or pick a read-only action.`;
 					} else if (permissionLevel === 'write') {
 						const allowedDescription = describeWriteOnlyAllowed(connectionType);
-						message = `This credential is write-only. Allowed operations: ${allowedDescription}.`;
+						message = `This credential is set as write-only. Allowed operations: ${allowedDescription}. Change credential permissions or use a different credential.`;
 					}
 					throw new NodeApiError(this.getNode(), { message }, { itemIndex: index });
 				}
@@ -510,10 +523,30 @@ export class Craft implements INodeType {
 							case 'fetch':
 								await documentFetch.call(this, index, credential, documentId, returnData);
 								break;
+							case 'search':
+								await documentSearch.call(this, index, credential, documentId, returnData);
+								break;
 							default:
 								throw new NodeApiError(
 									this.getNode(),
 									{ message: `Unsupported document operation "${operation}".` },
+									{ itemIndex: index },
+								);
+						}
+						continue;
+					}
+					case 'dailyNote': {
+						switch (operation) {
+							case 'search':
+								await dailyNoteSearch.call(this, index, credential, documentId, returnData);
+								break;
+							case 'searchBlocks':
+								await dailyNoteBlockSearch.call(this, index, credential, documentId, returnData);
+								break;
+							default:
+								throw new NodeApiError(
+									this.getNode(),
+									{ message: `Unsupported daily note operation "${operation}".` },
 									{ itemIndex: index },
 								);
 						}
