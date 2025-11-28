@@ -7,16 +7,10 @@ import {
 	collectionOperationProperty,
 	collectionProperties,
 } from './properties/collectionProperties';
-
-const documentPropery: INodeProperties = {
-	displayName: 'Document',
-	name: 'documentId',
-	type: 'string',
-	default: '',
-	description:
-		'ID of the document to work with. Usually an 11-character string between "https://connect.craft.do/link/" and "/docs/v1".',
-	required: true,
-};
+import { blockConstructProperties } from './properties/blockConstructProperties';
+import { taskOperationProperty, taskProperties } from './properties/taskProperties';
+import { documentOperationProperty, documentProperties } from './properties/documentProperties';
+import { dailyNoteOperationProperty, dailyNoteProperties } from './properties/dailyNoteProperties';
 
 const resourceProperty: INodeProperties = {
 	displayName: 'Resource',
@@ -26,6 +20,9 @@ const resourceProperty: INodeProperties = {
 	options: [
 		{ name: 'Block', value: 'block' },
 		{ name: 'Collection', value: 'collection' },
+		{ name: 'Daily Note', value: 'dailyNote' },
+		{ name: 'Document', value: 'document' },
+		{ name: 'Task', value: 'task' },
 	],
 	default: 'block',
 };
@@ -38,6 +35,7 @@ const operations: Array<[value: string, name: string, action: string, descriptio
 	['update', 'Update Blocks', 'Update blocks', 'Modify blocks'],
 	['move', 'Move Blocks', 'Move blocks', 'Reorder blocks in a document'],
 	['search', 'Search Blocks', 'Search blocks', 'Search content'],
+	['construct', 'Construct Blocks', 'Construct blocks', 'Construct blocks with validation'],
 ];
 
 const operationProperty: INodeProperties = {
@@ -56,13 +54,19 @@ const operationProperty: INodeProperties = {
 };
 
 export const craftProperties: INodeProperties[] = [
-	documentPropery,
 	resourceProperty,
 	operationProperty,
 	collectionOperationProperty,
+	taskOperationProperty,
+	documentOperationProperty,
+	dailyNoteOperationProperty,
 	...collectionProperties,
+	...taskProperties,
+	...documentProperties,
+	...dailyNoteProperties,
 	...blockFetchProperties,
 	...blockMutationProperties,
 	...blockUploadProperties,
 	...blockSearchProperties,
+	...blockConstructProperties,
 ];

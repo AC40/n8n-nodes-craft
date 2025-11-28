@@ -80,7 +80,7 @@ export async function craftApiRequest({
 		delete options.body;
 		delete (options.headers as IDataObject)['Content-Type'];
 	}
-	if (credential) {
+	if (credential?.apiKey) {
 		return _this.helpers.httpRequestWithAuthentication.call(_this, 'craftApi', {
 			...options,
 		});

@@ -33,6 +33,9 @@
       <ul>
         <li><a href="#blocks">Blocks</a></li>
         <li><a href="#collections">Collections</a></li>
+        <li><a href="#tasks">Tasks</a></li>
+        <li><a href="#documents">Documents</a></li>
+        <li><a href="#daily-notes">Daily Notes</a></li>
       </ul>
     </li>
     <li><a href="#credentials">Credentials</a></li>
@@ -68,21 +71,42 @@ Either run my custom image or build your own if you want to install additional p
 
 ## Operations
 
-Currently we support the following Operations
+The node now supports multiple Craft resources and their specific operations.
 
 ### Blocks
 
-- Fetch & Serach
-- Insert
-- Delete
-- Update & Move
+- Fetch blocks to retrieve content and attachments
+- Insert blocks to add new content to a document
+- Upload files as binary content inside a block
+- Delete blocks from a document
+- Update blocks to change existing content
+- Move blocks to reorder content
+- Search blocks in a document
+- Construct blocks with validation before sending them to Craft
 
 ### Collections
 
-- List items
-- Insert items (including creating new fields)
-- Modify items
-- Remove items
+- List items with optional depth and format controls
+- Create items (including introducing new select options)
+- Update items while reusing or adding select options
+- Delete items in bulk
+
+### Tasks
+
+- List tasks across inbox, upcoming, active, or logbook views
+- Create tasks in the inbox or a chosen daily note
+- Update tasks, including markdown, state, schedule, and deadline
+- Delete tasks by providing one or more IDs
+
+### Documents
+
+- List available documents
+- Search across documents
+
+### Daily Notes
+
+- Search daily notes with keyword and date filters
+- Search a single daily note
 
 ## Credentials
 

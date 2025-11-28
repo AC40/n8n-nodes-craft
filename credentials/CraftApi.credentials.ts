@@ -20,22 +20,47 @@ export class CraftApi implements ICredentialType {
 
 	properties: INodeProperties[] = [
 		{
+			displayName: 'Connection Type',
+			name: 'connectionType',
+			type: 'options',
+			default: 'document',
+			description: 'Choose which Craft API this credential targets',
+			options: [
+				{ name: 'Document API', value: 'document' },
+				{ name: 'Daily Notes & Tasks API', value: 'tasks' },
+			],
+		},
+		{
+			displayName: 'Permissions',
+			name: 'permissions',
+			type: 'options',
+			default: 'readWrite',
+			description: 'Permissions granted to this credential',
+			options: [
+				{ name: 'Read Only', value: 'read' },
+				{ name: 'Read + Write', value: 'readWrite' },
+				{ name: 'Write Only', value: 'write' },
+			],
+		},
+		{
 			displayName: 'API Key',
 			name: 'apiKey',
 			type: 'string',
 			default: '',
-			required: true,
+			required: false,
+			description:
+				'Optional for public documents; required for private documents and Daily Notes API',
 			typeOptions: { password: true },
 		},
 		{
-			displayName: 'Document ID',
+			displayName: 'Connection ID',
 			name: 'documentId',
 			type: 'string',
 			default: '',
 			required: true,
 			description:
-				'The ID of the document to which this API Key belongs. Usually an 11-character string between "https://connect.craft.do/link/" and "/docs/v1".',
-			placeholder: 'The API identifier of this document',
+				'The ID of the connection. Usually an 11-character string between. Found in the url of the connection between "https://connect.craft.do/links/" and "/api/v1.',
+			placeholder: 'e.g.: BxDA9pjUDPf (found in the url of the connection)',
 		},
 	];
 
@@ -43,7 +68,7 @@ export class CraftApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				Authorization: '={{`Bearer ${$credentials.apiKey}`}}',
+				Authorization: '={{$credentials.apiKey ? `Bearer ${$credentials.apiKey}` : undefined}}',
 			},
 		},
 	};
@@ -51,7 +76,7 @@ export class CraftApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: '={{`https://connect.craft.do/links/${$credentials.documentId}/api/v1`}}',
-			url: '/blocks',
+			url: '/collections',
 			method: 'GET',
 		},
 	};
