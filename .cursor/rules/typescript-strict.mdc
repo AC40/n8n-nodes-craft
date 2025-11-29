@@ -34,4 +34,4 @@ Group type imports separately from value imports.
 - Use `NodeApiError` from `n8n-workflow` for API errors
 - Always include error context with item index: `{ itemIndex: index }`
 - Use try-catch blocks for async operations
-- Always log errors to console before throwing
+- Never log errors to console before throwing

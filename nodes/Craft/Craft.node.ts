@@ -57,8 +57,7 @@ const resolveCollectionOptions = async (
 			headers: {},
 			json: true,
 		});
-	} catch (error) {
-		console.warn('Failed to fetch Craft collections', error);
+	} catch {
 		return { options: [], missingDocument: false };
 	}
 
@@ -560,8 +559,6 @@ export class Craft implements INodeType {
 						);
 				}
 			} catch (error) {
-				console.error('error', error);
-				console.error('index', index);
 				throw new NodeApiError(this.getNode(), error, { itemIndex: index });
 			}
 		}

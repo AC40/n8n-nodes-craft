@@ -15,7 +15,6 @@
 try {
 	// operation code
 } catch (error) {
-	console.error('Failed to fetch collections', error);
 	throw new NodeApiError(this.getNode(), error, { itemIndex: index });
 }
 ```

@@ -64,9 +64,6 @@ export async function craftApiRequest({
 	headers,
 	json,
 }: CraftApiRequestOptions) {
-	console.log('credential', credential);
-	console.log(credential?.apiKey);
-	console.log(credential?.documentId);
 	const options: IHttpRequestOptions = {
 		method,
 		url: `${buildBaseUrl(documentId)}${endpoint}`,
@@ -95,8 +92,7 @@ export const parseParameter = <T>(
 	if (typeof param === 'string') {
 		try {
 			return JSON.parse(param) as T;
-		} catch (error) {
-			console.error('Error parsing parameter', error);
+		} catch {
 			return null;
 		}
 	}

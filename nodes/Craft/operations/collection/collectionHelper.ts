@@ -14,7 +14,6 @@ export function getCollectionEndpoint(
 	let collectionName = trimmedCollectionName;
 	if (mode !== 'id') {
 		collectionName = toCollectionSlug(trimmedCollectionName);
-		console.log('collectionName', collectionName);
 	} else {
 		const slug = toCollectionSlug(trimmedCollectionName);
 		if (slug) collectionName = slug;
