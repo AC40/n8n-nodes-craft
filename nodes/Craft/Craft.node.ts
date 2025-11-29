@@ -210,7 +210,7 @@ export class Craft implements INodeType {
 				if (!options.length) {
 					return [
 						{
-							name: 'No Collections Available for this Connection',
+							name: 'No Collections Available for This Connection',
 							value: '',
 						},
 					];

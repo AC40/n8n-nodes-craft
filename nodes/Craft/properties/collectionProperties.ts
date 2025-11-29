@@ -16,28 +16,10 @@ export const collectionOperationProperty: INodeProperties = {
 	default: 'list',
 	options: [
 		{
-			name: 'List Items',
-			value: 'list',
-			action: 'List collection items',
-			description: 'Retrieve collection items',
-		},
-		{
-			name: 'Get Collection Schema',
-			value: 'getSchema',
-			action: 'Get collection schema',
-			description: 'Retrieve a collection schema in the desired format',
-		},
-		{
 			name: 'Create Items',
 			value: 'create',
 			action: 'Create collection items',
 			description: 'Insert new items into a collection',
-		},
-		{
-			name: 'Update Items',
-			value: 'update',
-			action: 'Update collection items',
-			description: 'Modify existing items in a collection',
 		},
 		{
 			name: 'Delete Items',
@@ -46,10 +28,28 @@ export const collectionOperationProperty: INodeProperties = {
 			description: 'Remove items from a collection',
 		},
 		{
+			name: 'Get Collection Schema',
+			value: 'getSchema',
+			action: 'Get collection schema',
+			description: 'Retrieve a collection schema in the desired format',
+		},
+		{
 			name: 'List Collections',
 			value: 'listCollections',
 			action: 'List collections',
 			description: 'Retrieve available collections and their metadata',
+		},
+		{
+			name: 'List Items',
+			value: 'list',
+			action: 'List collection items',
+			description: 'Retrieve collection items',
+		},
+		{
+			name: 'Update Items',
+			value: 'update',
+			action: 'Update collection items',
+			description: 'Modify existing items in a collection',
 		},
 	],
 };
@@ -197,7 +197,7 @@ export const collectionProperties: INodeProperties[] = [
 					{ name: 'Schema Structure', value: 'schema' },
 				],
 				description:
-					"'json-schema-items' returns validation schema for items (default). 'schema' returns editable schema structure.",
+					"'JSON-schema-items' returns validation schema for items (default). 'schema' returns editable schema structure.",
 			},
 		],
 	},
@@ -226,7 +226,7 @@ export const collectionProperties: INodeProperties[] = [
 					{ name: 'Include', value: 'include' },
 					{ name: 'Exclude', value: 'exclude' },
 				],
-				description: 'Whether to include or exclude the supplied document IDs.',
+				description: 'Whether to include or exclude the supplied document IDs',
 			},
 			{
 				displayName: 'Start Date',

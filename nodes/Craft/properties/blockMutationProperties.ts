@@ -40,8 +40,7 @@ export const blockMutationProperties: INodeProperties[] = [
 				name: 'pageId',
 				type: 'string',
 				default: '',
-				description:
-					'For multi-document credentials, provide the page/document ID when using Start or End positions.',
+				description: 'For multi-document credentials, provide the page/document ID when using Start or End positions',
 			},
 			{
 				displayName: 'Daily Note Date',
@@ -191,8 +190,7 @@ export const blockMutationProperties: INodeProperties[] = [
 				name: 'pageId',
 				type: 'string',
 				default: '',
-				description:
-					'For multi-document credentials, provide the page/document ID when using Start or End positions.',
+				description: 'For multi-document credentials, provide the page/document ID when using Start or End positions',
 			},
 			{
 				displayName: 'Daily Note Date',

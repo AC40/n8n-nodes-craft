@@ -17,8 +17,7 @@ export const blockFetchProperties: INodeProperties[] = [
 		name: 'dailyNoteDate',
 		type: 'string',
 		default: 'today',
-		description:
-			'When using a Daily Notes credential and no block ID is provided, fetch the daily note for this date (YYYY-MM-DD or relative date like "today").',
+		description: 'When using a Daily Notes credential and no block ID is provided, fetch the daily note for this date (YYYY-MM-DD or relative date like "today")',
 		displayOptions: { show: display },
 	},
 	{
