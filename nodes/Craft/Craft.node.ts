@@ -24,6 +24,7 @@ import { collectionCreate } from './operations/collection/collectionCreate';
 import { collectionDelete } from './operations/collection/collectionDelete';
 import { collectionList } from './operations/collection/collectionList';
 import { collectionListCollections } from './operations/collection/collectionListCollections';
+import { collectionGetSchema } from './operations/collection/collectionGetSchema';
 import { collectionUpdate } from './operations/collection/collectionUpdate';
 import { blockConstruct } from './operations/block/blockConstruct';
 import { taskList } from './operations/task/taskList';
@@ -505,6 +506,9 @@ export class Craft implements INodeType {
 						switch (operation) {
 							case 'list':
 								await collectionList.call(this, index, credential, documentId, returnData);
+								break;
+							case 'getSchema':
+								await collectionGetSchema.call(this, index, credential, documentId, returnData);
 								break;
 							case 'listCollections':
 								await collectionListCollections.call(

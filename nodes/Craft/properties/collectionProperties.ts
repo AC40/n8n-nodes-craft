@@ -22,6 +22,12 @@ export const collectionOperationProperty: INodeProperties = {
 			description: 'Retrieve collection items',
 		},
 		{
+			name: 'Get Collection Schema',
+			value: 'getSchema',
+			action: 'Get collection schema',
+			description: 'Retrieve a collection schema in the desired format',
+		},
+		{
 			name: 'Create Items',
 			value: 'create',
 			action: 'Create collection items',
@@ -59,7 +65,7 @@ export const collectionProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['collection'],
-				operation: ['list', 'create', 'update', 'delete'],
+				operation: ['list', 'create', 'update', 'delete', 'getSchema'],
 			},
 		},
 		modes: [
@@ -172,6 +178,28 @@ export const collectionProperties: INodeProperties[] = [
 		required: true,
 		description: 'Array of collection item IDs to delete. Example: ["1","2"].',
 		displayOptions: show('delete'),
+	},
+	{
+		displayName: 'Schema Options',
+		name: 'collectionSchemaOptions',
+		type: 'collection',
+		default: { format: 'json-schema-items' },
+		placeholder: 'Add option',
+		displayOptions: show('getSchema'),
+		options: [
+			{
+				displayName: 'Format',
+				name: 'format',
+				type: 'options',
+				default: 'json-schema-items',
+				options: [
+					{ name: 'JSON Schema Items', value: 'json-schema-items' },
+					{ name: 'Schema Structure', value: 'schema' },
+				],
+				description:
+					"'json-schema-items' returns validation schema for items (default). 'schema' returns editable schema structure.",
+			},
+		],
 	},
 	{
 		displayName: 'List Collections Options',

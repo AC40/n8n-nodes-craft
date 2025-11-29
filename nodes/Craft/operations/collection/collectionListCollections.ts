@@ -16,7 +16,11 @@ export async function collectionListCollections(
 	documentId: string,
 	returnData: IDataObject[],
 ): Promise<void> {
-	const options = this.getNodeParameter('collectionListCollectionsOptions', index, {}) as IDataObject;
+	const options = this.getNodeParameter(
+		'collectionListCollectionsOptions',
+		index,
+		{},
+	) as IDataObject;
 
 	const qs: IDataObject = {};
 
@@ -44,4 +48,3 @@ export async function collectionListCollections(
 	});
 	pushResult(returnData, response);
 }
-
