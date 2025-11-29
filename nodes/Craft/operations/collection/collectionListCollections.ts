@@ -1,28 +1,31 @@
 import type { ICredentialDataDecryptedObject, IDataObject, IExecuteFunctions } from 'n8n-workflow';
 import { craftApiRequest, pushResult } from '../../helpers';
 
-const normalizeInclude = (input: string): string[] =>
-	input
-		.split(',')
-		.map((entry) => entry.trim())
-		.filter(Boolean);
+const normalizeCsv = (value: string | undefined): string[] =>
+	value
+		? value
+				.split(',')
+				.map((entry) => entry.trim())
+				.filter(Boolean)
+		: [];
 
-export async function dailyNoteSearch(
+export async function collectionListCollections(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
 	documentId: string,
 	returnData: IDataObject[],
 ): Promise<void> {
-	const includeRaw = this.getNodeParameter('include', index) as string;
-	const options = this.getNodeParameter('dailyNoteSearchOptions', index, {}) as IDataObject;
+	const options = this.getNodeParameter('collectionListCollectionsOptions', index, {}) as IDataObject;
 
 	const qs: IDataObject = {};
-	const includeTerms = normalizeInclude(includeRaw);
-	if (includeTerms.length === 1) {
-		qs.include = includeTerms[0];
-	} else if (includeTerms.length > 1) {
-		qs.include = includeTerms;
+
+	const documentIds = normalizeCsv(options.documentIds as string | undefined);
+	if (documentIds.length === 1) qs.documentIds = documentIds[0];
+	else if (documentIds.length > 1) qs.documentIds = documentIds;
+
+	if (documentIds.length) {
+		qs.documentFilterMode = (options.documentFilterMode as string) || 'include';
 	}
 
 	if (options.startDate) qs.startDate = options.startDate;
@@ -33,7 +36,7 @@ export async function dailyNoteSearch(
 		credential,
 		documentId,
 		method: 'GET',
-		endpoint: '/daily-notes/search',
+		endpoint: '/collections',
 		body: {},
 		qs,
 		headers: {},
@@ -41,3 +44,4 @@ export async function dailyNoteSearch(
 	});
 	pushResult(returnData, response);
 }
+

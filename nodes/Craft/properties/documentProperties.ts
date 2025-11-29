@@ -32,30 +32,6 @@ export const documentOperationProperty: INodeProperties = {
 
 export const documentProperties: INodeProperties[] = [
 	{
-		displayName: 'Fetch Options',
-		name: 'documentFetchOptions',
-		type: 'collection',
-		default: {},
-		placeholder: 'Add option',
-		displayOptions: show('fetch'),
-		options: [
-			{
-				displayName: 'Start Date',
-				name: 'startDate',
-				type: 'string',
-				default: '',
-				description: 'Filter documents updated after this date (YYYY-MM-DD)',
-			},
-			{
-				displayName: 'End Date',
-				name: 'endDate',
-				type: 'string',
-				default: '',
-				description: 'Filter documents updated before this date (YYYY-MM-DD)',
-			},
-		],
-	},
-	{
 		displayName: 'Include Terms',
 		name: 'documentInclude',
 		type: 'string',
@@ -93,4 +69,3 @@ export const documentProperties: INodeProperties[] = [
 		],
 	},
 ];
-

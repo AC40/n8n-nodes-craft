@@ -4,6 +4,16 @@ const display = { resource: ['block'], operation: ['search'] };
 
 export const blockSearchProperties: INodeProperties[] = [
 	{
+		displayName: 'Document ID',
+		name: 'searchDocumentId',
+		type: 'string',
+		required: true,
+		default: '',
+		description:
+			'Document ID (root block ID) to search within. Use the List Documents operation to discover IDs.',
+		displayOptions: { show: display },
+	},
+	{
 		displayName: 'Pattern',
 		name: 'pattern',
 		type: 'string',
@@ -48,4 +58,3 @@ export const blockSearchProperties: INodeProperties[] = [
 		],
 	},
 ];
-

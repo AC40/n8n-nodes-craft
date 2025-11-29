@@ -41,7 +41,15 @@ export const blockMutationProperties: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description:
-					'The page ID where to insert the block when position type is Start of Page or End of Page. Defaults to 0 (root document).',
+					'For multi-document credentials, provide the page/document ID when using Start or End positions.',
+			},
+			{
+				displayName: 'Daily Note Date',
+				name: 'date',
+				type: 'string',
+				default: '',
+				description:
+					'Only applicable when using a Daily Notes & Tasks credential. Provide the note date (YYYY-MM-DD or relative date like "today") when inserting at the start or end; ignored for Document credentials.',
 			},
 			{
 				displayName: 'Sibling ID',
@@ -184,7 +192,15 @@ export const blockMutationProperties: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description:
-					'The page ID where to insert the block when position type is Start of Page or End of Page. Defaults to 0 (root document).',
+					'For multi-document credentials, provide the page/document ID when using Start or End positions.',
+			},
+			{
+				displayName: 'Daily Note Date',
+				name: 'date',
+				type: 'string',
+				default: '',
+				description:
+					'Only applicable when using a Daily Notes & Tasks credential. Provide the note date (YYYY-MM-DD or relative date like "today") when inserting at the start or end; ignored for Document credentials.',
 			},
 			{
 				displayName: 'Sibling ID',

@@ -32,6 +32,7 @@ export async function blockMove(
 		);
 	}
 
+	const connectionType = (credential?.connectionType as string) === 'tasks' ? 'tasks' : 'document';
 	const positionParam = this.getNodeParameter('movePosition', index, {}) as IDataObject;
 	const position = parseParameter<IDataObject>(positionParam) ?? {};
 	const type = (position.type as string) || 'end';
@@ -39,10 +40,36 @@ export async function blockMove(
 	const bodyPosition: IDataObject = {
 		position: type,
 	};
-	if ((type === 'end' || type === 'start') && position.pageId) {
-		bodyPosition.pageId = position.pageId;
-	} else if ((type === 'before' || type === 'after') && position.siblingId) {
-		bodyPosition.siblingId = position.siblingId;
+	const pageId = typeof position.pageId === 'string' ? position.pageId.trim() : '';
+	const siblingId = typeof position.siblingId === 'string' ? position.siblingId.trim() : '';
+	const date = typeof position.date === 'string' ? position.date.trim() : '';
+
+	if (type === 'before' || type === 'after') {
+		if (!siblingId) {
+			throw new NodeApiError(
+				this.getNode(),
+				{ message: 'Please provide a sibling ID when moving before or after a block.' },
+				{ itemIndex: index },
+			);
+		}
+		bodyPosition.siblingId = siblingId;
+	} else if (type === 'start' || type === 'end') {
+		if (connectionType === 'document') {
+			if (!pageId) {
+				throw new NodeApiError(
+					this.getNode(),
+					{
+						message:
+							'Please provide a page/document ID when moving to the start or end using a multi-document credential.',
+					},
+					{ itemIndex: index },
+				);
+			}
+			bodyPosition.pageId = pageId;
+		} else {
+			bodyPosition.date = date || 'today';
+			if (pageId) bodyPosition.pageId = pageId;
+		}
 	}
 
 	const response = await craftApiRequest({

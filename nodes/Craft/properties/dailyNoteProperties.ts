@@ -58,13 +58,6 @@ export const dailyNoteProperties: INodeProperties[] = [
 				default: '',
 				description: 'End date (YYYY-MM-DD) or relative date (today, yesterday, etc.)',
 			},
-			{
-				displayName: 'Daily Note Date',
-				name: 'date',
-				type: 'string',
-				default: '',
-				description: 'Specific daily note date (YYYY-MM-DD) to narrow the search scope',
-			},
 		],
 	},
 	{

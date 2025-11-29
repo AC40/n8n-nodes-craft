@@ -14,13 +14,6 @@ const buildBaseUrl = (documentId: string) =>
 export const ensureArray = (value: string | string[] | undefined) =>
 	Array.isArray(value) ? value : value ? [value] : [];
 
-export const toCollectionSlug = (label: string) =>
-	label
-		.trim()
-		.toLowerCase()
-		.replace(/ /g, '_')
-		.replace(/[^a-z0-9_]/g, '');
-
 export const pushResult = (collector: IDataObject[], data: unknown, fallback = 'value') => {
 	if (Array.isArray(data)) {
 		data.forEach((entry) => pushResult(collector, entry, fallback));

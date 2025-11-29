@@ -39,6 +39,12 @@ export const collectionOperationProperty: INodeProperties = {
 			action: 'Delete collection items',
 			description: 'Remove items from a collection',
 		},
+		{
+			name: 'List Collections',
+			value: 'listCollections',
+			action: 'List collections',
+			description: 'Retrieve available collections and their metadata',
+		},
 	],
 };
 
@@ -49,8 +55,13 @@ export const collectionProperties: INodeProperties[] = [
 		type: 'resourceLocator',
 		default: { mode: 'list', value: '' },
 		required: true,
-		description: 'Select or enter the collection to target',
-		displayOptions: { show: { resource: ['collection'] } },
+		description: 'Select or enter the collection ID returned by the GET /collections endpoint',
+		displayOptions: {
+			show: {
+				resource: ['collection'],
+				operation: ['list', 'create', 'update', 'delete'],
+			},
+		},
 		modes: [
 			{
 				displayName: 'Collection',
@@ -66,7 +77,7 @@ export const collectionProperties: INodeProperties[] = [
 				displayName: 'Manual',
 				name: 'id',
 				type: 'string',
-				placeholder: 'collection_slug',
+				placeholder: 'col-123 (collection ID)',
 			},
 		],
 	},
@@ -161,5 +172,50 @@ export const collectionProperties: INodeProperties[] = [
 		required: true,
 		description: 'Array of collection item IDs to delete. Example: ["1","2"].',
 		displayOptions: show('delete'),
+	},
+	{
+		displayName: 'List Collections Options',
+		name: 'collectionListCollectionsOptions',
+		type: 'collection',
+		default: {},
+		placeholder: 'Add option',
+		displayOptions: show('listCollections'),
+		options: [
+			{
+				displayName: 'Document IDs',
+				name: 'documentIds',
+				type: 'string',
+				default: '',
+				description:
+					'Comma-separated document IDs to include or exclude. Leave empty to list all accessible collections.',
+			},
+			{
+				displayName: 'Document Filter Mode',
+				name: 'documentFilterMode',
+				type: 'options',
+				default: 'include',
+				options: [
+					{ name: 'Include', value: 'include' },
+					{ name: 'Exclude', value: 'exclude' },
+				],
+				description: 'Whether to include or exclude the supplied document IDs.',
+			},
+			{
+				displayName: 'Start Date',
+				name: 'startDate',
+				type: 'string',
+				default: '',
+				description:
+					'Daily Notes credentials only. Filter collections in notes on or after this date (YYYY-MM-DD or relative date).',
+			},
+			{
+				displayName: 'End Date',
+				name: 'endDate',
+				type: 'string',
+				default: '',
+				description:
+					'Daily Notes credentials only. Filter collections in notes on or before this date (YYYY-MM-DD or relative date).',
+			},
+		],
 	},
 ];

@@ -8,7 +8,17 @@ export const blockFetchProperties: INodeProperties[] = [
 		name: 'blockId',
 		type: 'string',
 		default: '',
-		description: 'ID of the block to fetch. Leave empty to load the root page.',
+		description:
+			'ID of the block or document to fetch. Required when using a multi-document credential. Use the List Documents operation to discover IDs.',
+		displayOptions: { show: display },
+	},
+	{
+		displayName: 'Daily Note Date',
+		name: 'dailyNoteDate',
+		type: 'string',
+		default: 'today',
+		description:
+			'When using a Daily Notes credential and no block ID is provided, fetch the daily note for this date (YYYY-MM-DD or relative date like "today").',
 		displayOptions: { show: display },
 	},
 	{

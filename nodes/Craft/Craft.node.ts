@@ -12,7 +12,7 @@ import type {
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 import { craftProperties } from './descriptions';
-import { craftApiRequest, toCollectionSlug } from './helpers';
+import { craftApiRequest } from './helpers';
 import { blockDelete } from './operations/block/blockDelete';
 import { blockFetch } from './operations/block/blockFetch';
 import { blockInsert } from './operations/block/blockInsert';
@@ -23,6 +23,7 @@ import { blockUpload } from './operations/block/blockUpload';
 import { collectionCreate } from './operations/collection/collectionCreate';
 import { collectionDelete } from './operations/collection/collectionDelete';
 import { collectionList } from './operations/collection/collectionList';
+import { collectionListCollections } from './operations/collection/collectionListCollections';
 import { collectionUpdate } from './operations/collection/collectionUpdate';
 import { blockConstruct } from './operations/block/blockConstruct';
 import { taskList } from './operations/task/taskList';
@@ -51,7 +52,7 @@ const resolveCollectionOptions = async (
 			credential,
 			documentId,
 			method: 'GET',
-			endpoint: '/blocks',
+			endpoint: '/collections',
 			body: {},
 			qs: {},
 			headers: {},
@@ -61,34 +62,63 @@ const resolveCollectionOptions = async (
 		return { options: [], missingDocument: false };
 	}
 
+	const toCollectionArray = (payload: unknown): IDataObject[] => {
+		if (Array.isArray(payload)) return payload as IDataObject[];
+		if (payload && typeof payload === 'object') {
+			const root = payload as IDataObject;
+			if (Array.isArray(root.items)) return root.items as IDataObject[];
+			if (Array.isArray(root.collections)) return root.collections as IDataObject[];
+		}
+		return [];
+	};
+
+	const getId = (collection: IDataObject): string | null => {
+		const candidates = [collection.key, collection.id, collection.collectionId, collection.slug];
+		for (const candidate of candidates) {
+			if (typeof candidate === 'string') {
+				const trimmed = candidate.trim();
+				if (trimmed) return trimmed;
+			}
+		}
+		return null;
+	};
+
+	const getName = (collection: IDataObject): string | null => {
+		const schema = (collection.schema as IDataObject) ?? {};
+		const candidates = [collection.name, schema.name, collection.title, collection.markdown];
+		for (const candidate of candidates) {
+			if (typeof candidate === 'string') {
+				const trimmed = candidate.trim();
+				if (trimmed) return trimmed;
+			}
+		}
+		return null;
+	};
+
+	const collections = toCollectionArray(response);
 	const options: INodePropertyOptions[] = [];
 	const seen = new Set<string>();
 
-	const upsertOption = (name: string) => {
-		const trimmed = name.trim();
-		const slug = toCollectionSlug(trimmed);
-		if (!trimmed || !slug || seen.has(slug)) return;
-		seen.add(slug);
-		options.push({ name: trimmed, value: slug });
-	};
-
-	const walk = (nodes: unknown): void => {
-		if (!Array.isArray(nodes)) return;
-		nodes.forEach((entry) => {
-			if (!entry || typeof entry !== 'object') return;
-			const block = entry as IDataObject;
-			if ((block.type as string) === 'collection' && typeof block.markdown === 'string') {
-				upsertOption(block.markdown);
-			}
-			if (Array.isArray(block.content)) walk(block.content as IDataObject[]);
+	collections.forEach((collection) => {
+		if (!collection || typeof collection !== 'object') return;
+		const entry = collection as IDataObject;
+		const id = getId(entry);
+		if (!id || seen.has(id)) return;
+		const label = getName(entry) ?? id;
+		const descriptionParts: string[] = [];
+		if (typeof entry.documentId === 'string' && entry.documentId.trim()) {
+			descriptionParts.push(`Document ${entry.documentId.trim()}`);
+		}
+		if (typeof entry.dailyNoteDate === 'string' && entry.dailyNoteDate.trim()) {
+			descriptionParts.push(entry.dailyNoteDate.trim());
+		}
+		seen.add(id);
+		options.push({
+			name: label,
+			value: id,
+			description: descriptionParts.length ? descriptionParts.join(' • ') : undefined,
 		});
-	};
-
-	if (Array.isArray(response)) walk(response as IDataObject[]);
-	else if (response && typeof response === 'object') {
-		const root = response as IDataObject;
-		if (Array.isArray(root.content)) walk(root.content as IDataObject[]);
-	}
+	});
 
 	return { options, missingDocument: false };
 };
@@ -179,7 +209,7 @@ export class Craft implements INodeType {
 				if (!options.length) {
 					return [
 						{
-							name: 'No Collections Detected in Document',
+							name: 'No Collections Available for this Connection',
 							value: '',
 						},
 					];
@@ -475,6 +505,15 @@ export class Craft implements INodeType {
 						switch (operation) {
 							case 'list':
 								await collectionList.call(this, index, credential, documentId, returnData);
+								break;
+							case 'listCollections':
+								await collectionListCollections.call(
+									this,
+									index,
+									credential,
+									documentId,
+									returnData,
+								);
 								break;
 							case 'create':
 								await collectionCreate.call(this, index, credential, documentId, returnData);
