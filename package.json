@@ -46,11 +46,11 @@
 		}
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "*",
-		"@types/node": "^24.9.2",
+		"@n8n/node-cli": "^0.17.0",
+		"@types/node": "^24.10.3",
 		"eslint": "9.32.0",
 		"prettier": "3.6.2",
-		"release-it": "^19.0.4",
+		"release-it": "^19.1.0",
 		"typescript": "5.9.2"
 	},
 	"peerDependencies": {
