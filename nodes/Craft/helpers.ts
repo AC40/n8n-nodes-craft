@@ -8,9 +8,6 @@ import type {
 	NodeParameterValueType,
 } from 'n8n-workflow';
 
-const buildBaseUrl = (documentId: string) =>
-	`https://connect.craft.do/links/${encodeURIComponent(documentId)}/api/v1`;
-
 export const ensureArray = (value: string | string[] | undefined) =>
 	Array.isArray(value) ? value : value ? [value] : [];
 
@@ -35,7 +32,7 @@ type CraftContext = IExecuteFunctions | ILoadOptionsFunctions;
 type CraftApiRequestOptions = {
 	_this: CraftContext;
 	credential: ICredentialDataDecryptedObject | null;
-	documentId: string;
+	baseUrl: string;
 	method: IHttpRequestMethods;
 	endpoint: string;
 	body: IDataObject;
@@ -49,7 +46,7 @@ export async function craftApiRequest({
 	// or use destructuring alias if you want to keep 'this'
 	_this,
 	credential,
-	documentId,
+	baseUrl,
 	method,
 	endpoint,
 	body,
@@ -59,7 +56,7 @@ export async function craftApiRequest({
 }: CraftApiRequestOptions) {
 	const options: IHttpRequestOptions = {
 		method,
-		url: `${buildBaseUrl(documentId)}${endpoint}`,
+		url: `${baseUrl}${endpoint}`,
 		qs,
 		headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...headers },
 		json,

@@ -13,7 +13,7 @@ export async function collectionListCollections(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const options = this.getNodeParameter(
@@ -38,7 +38,7 @@ export async function collectionListCollections(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'GET',
 		endpoint: '/collections',
 		body: {},

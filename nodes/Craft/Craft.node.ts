@@ -10,7 +10,7 @@ import type {
 	INodeTypeDescription,
 	ResourceMapperFields,
 } from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { NodeApiError, NodeConnectionTypes } from 'n8n-workflow';
 import { craftProperties } from './descriptions';
 import { craftApiRequest } from './helpers';
 import { blockDelete } from './operations/block/blockDelete';
@@ -35,6 +35,10 @@ import { documentFetch } from './operations/document/documentFetch';
 import { documentSearch } from './operations/document/documentSearch';
 import { dailyNoteSearch } from './operations/dailyNote/dailyNoteSearch';
 import { dailyNoteBlockSearch } from './operations/dailyNote/dailyNoteBlockSearch';
+import { folderList } from './operations/folder/folderList';
+import { folderCreate } from './operations/folder/folderCreate';
+import { folderDelete } from './operations/folder/folderDelete';
+import { folderMove } from './operations/folder/folderMove';
 
 const resolveCollectionOptions = async (
 	context: ILoadOptionsFunctions,
@@ -43,15 +47,15 @@ const resolveCollectionOptions = async (
 
 	if (!credential) return { options: [], missingDocument: true };
 
-	const documentId = (credential.documentId as string)?.trim();
-	if (!documentId) return { options: [], missingDocument: true };
+	const baseUrl = (credential.baseUrl as string)?.trim();
+	if (!baseUrl) return { options: [], missingDocument: true };
 
 	let response: unknown;
 	try {
 		response = await craftApiRequest({
 			_this: context,
 			credential,
-			documentId,
+			baseUrl,
 			method: 'GET',
 			endpoint: '/collections',
 			body: {},
@@ -129,6 +133,8 @@ const WRITE_OPERATIONS: Record<string, Set<string>> = {
 	collection: new Set(['create', 'update', 'delete']),
 	task: new Set(['create', 'update', 'delete']),
 	document: new Set(),
+	folder: new Set(['create', 'delete', 'move']),
+	dailyNote: new Set(),
 };
 
 const getOperationCategory = (resource: string, operation: string): 'read' | 'write' => {
@@ -136,19 +142,37 @@ const getOperationCategory = (resource: string, operation: string): 'read' | 'wr
 	return 'read';
 };
 
-type ConnectionMode = 'document' | 'tasks';
+type ConnectionMode = 'dailyNotes' | 'multiDocument' | 'fullSpace';
+
+// Define which resources are available for each connection type
+const CONNECTION_RESOURCES: Record<ConnectionMode, Set<string>> = {
+	dailyNotes: new Set(['block', 'task', 'collection', 'dailyNote']),
+	multiDocument: new Set(['block', 'document', 'collection']),
+	fullSpace: new Set(['block', 'document', 'collection', 'folder']),
+};
 
 const WRITE_ONLY_ALLOWED: Record<ConnectionMode, Record<string, Set<string>>> = {
-	document: {
+	dailyNotes: {
+		block: new Set(['insert']),
+		task: new Set(['create']),
+		collection: new Set(['list', 'create']),
+		dailyNote: new Set(['search']),
+	},
+	multiDocument: {
 		block: new Set(['insert']),
 		document: new Set(['fetch']),
 		collection: new Set(['list', 'create']),
 	},
-	tasks: {
+	fullSpace: {
 		block: new Set(['insert']),
-		task: new Set(['create']),
+		document: new Set(['fetch']),
 		collection: new Set(['list', 'create']),
+		folder: new Set(['list', 'create']),
 	},
+};
+
+const isResourceAllowed = (connectionType: ConnectionMode, resource: string): boolean => {
+	return CONNECTION_RESOURCES[connectionType]?.has(resource) ?? false;
 };
 
 const isOperationAllowed = (
@@ -157,6 +181,11 @@ const isOperationAllowed = (
 	resource: string,
 	operation: string,
 ): boolean => {
+	// First check if the resource is allowed for this connection type
+	if (!isResourceAllowed(connectionType, resource)) {
+		return false;
+	}
+
 	if (permissionLevel === 'readWrite') return true;
 	if (permissionLevel === 'read') return getOperationCategory(resource, operation) === 'read';
 	if (permissionLevel === 'write') {
@@ -187,8 +216,8 @@ export class Craft implements INodeType {
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Interact with your Craft documents via the API',
 		defaults: { name: 'Craft' },
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [{ name: 'craftApi', required: true }],
 		usableAsTool: true,
 		documentationUrl: 'https://docs.n8n.io/integrations/custom-nodes/',
@@ -404,17 +433,35 @@ export class Craft implements INodeType {
 			);
 		}
 
-		const documentId = (credential.documentId as string).trim();
-		if (!documentId) {
+		const baseUrl = (credential.baseUrl as string).trim();
+		if (!baseUrl) {
 			throw new NodeApiError(
 				this.getNode(),
-				{ message: 'Document ID is missing from the Craft API credential' },
+				{ message: 'Base URL is missing from the Craft API credential' },
 				{ itemIndex: 0 },
 			);
 		}
 
-		const connectionType: ConnectionMode =
-			(credential.connectionType as string) === 'tasks' ? 'tasks' : 'document';
+		// Map legacy connection types to new ones for backwards compatibility
+		const rawConnectionType = (credential.connectionType as string) || 'multiDocument';
+		let connectionType: ConnectionMode;
+
+		switch (rawConnectionType) {
+			case 'tasks':
+			case 'dailyNotes':
+				connectionType = 'dailyNotes';
+				break;
+			case 'document':
+			case 'multiDocument':
+				connectionType = 'multiDocument';
+				break;
+			case 'fullSpace':
+				connectionType = 'fullSpace';
+				break;
+			default:
+				connectionType = 'multiDocument';
+		}
+
 		const permissionLevel = (credential.permissions as string) || 'readWrite';
 
 		for (let index = 0; index < items.length; index++) {
@@ -422,32 +469,28 @@ export class Craft implements INodeType {
 				const resource = this.getNodeParameter('resource', index) as string;
 				const operation = this.getNodeParameter('operation', index) as string;
 
-				if (resource === 'task' && connectionType === 'document') {
-					throw new NodeApiError(
-						this.getNode(),
-						{
-							message:
-								'Tasks resource is only available for Daily Notes API credentials. Provide a Tasks/Daily Notes credential to continue.',
-						},
-						{ itemIndex: index },
+				// Check if the resource is allowed for this connection type
+				if (!isResourceAllowed(connectionType, resource)) {
+					const availableResources = Array.from(CONNECTION_RESOURCES[connectionType] || []).join(
+						', ',
 					);
-				}
-				if (resource === 'document' && connectionType === 'tasks') {
+					let connectionName: string = connectionType;
+					switch (connectionType) {
+						case 'dailyNotes':
+							connectionName = 'Daily Notes';
+							break;
+						case 'multiDocument':
+							connectionName = 'Multi-Document';
+							break;
+						case 'fullSpace':
+							connectionName = 'Full Space';
+							break;
+					}
+
 					throw new NodeApiError(
 						this.getNode(),
 						{
-							message:
-								'Document resource is only available for Document API credentials. Provide a Document credential to continue.',
-						},
-						{ itemIndex: index },
-					);
-				}
-				if (resource === 'dailyNote' && connectionType === 'document') {
-					throw new NodeApiError(
-						this.getNode(),
-						{
-							message:
-								'Daily Note resource is only available for Daily Notes API credentials. Provide a Daily Notes credential to continue.',
+							message: `The "${resource}" resource is not available for ${connectionName} connections. Available resources: ${availableResources}. Please use the appropriate connection type.`,
 						},
 						{ itemIndex: index },
 					);
@@ -468,25 +511,25 @@ export class Craft implements INodeType {
 					case 'block': {
 						switch (operation) {
 							case 'fetch':
-								await blockFetch.call(this, index, credential, documentId, returnData);
+								await blockFetch.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'insert':
-								await blockInsert.call(this, index, credential, documentId, returnData);
+								await blockInsert.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'upload':
-								await blockUpload.call(this, index, credential, documentId, returnData);
+								await blockUpload.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'update':
-								await blockUpdate.call(this, index, credential, documentId, returnData);
+								await blockUpdate.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'delete':
-								await blockDelete.call(this, index, credential, documentId, returnData);
+								await blockDelete.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'move':
-								await blockMove.call(this, index, credential, documentId, returnData);
+								await blockMove.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'search':
-								await blockSearch.call(this, index, credential, documentId, returnData);
+								await blockSearch.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'construct': {
 								const blocks = blockConstruct.call(this, index);
@@ -505,28 +548,22 @@ export class Craft implements INodeType {
 					case 'collection': {
 						switch (operation) {
 							case 'list':
-								await collectionList.call(this, index, credential, documentId, returnData);
+								await collectionList.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'getSchema':
-								await collectionGetSchema.call(this, index, credential, documentId, returnData);
+								await collectionGetSchema.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'listCollections':
-								await collectionListCollections.call(
-									this,
-									index,
-									credential,
-									documentId,
-									returnData,
-								);
+								await collectionListCollections.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'create':
-								await collectionCreate.call(this, index, credential, documentId, returnData);
+								await collectionCreate.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'update':
-								await collectionUpdate.call(this, index, credential, documentId, returnData);
+								await collectionUpdate.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'delete':
-								await collectionDelete.call(this, index, credential, documentId, returnData);
+								await collectionDelete.call(this, index, credential, baseUrl, returnData);
 								break;
 							default:
 								throw new NodeApiError(
@@ -540,16 +577,16 @@ export class Craft implements INodeType {
 					case 'task': {
 						switch (operation) {
 							case 'list':
-								await taskList.call(this, index, credential, documentId, returnData);
+								await taskList.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'create':
-								await taskCreate.call(this, index, credential, documentId, returnData);
+								await taskCreate.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'update':
-								await taskUpdate.call(this, index, credential, documentId, returnData);
+								await taskUpdate.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'delete':
-								await taskDelete.call(this, index, credential, documentId, returnData);
+								await taskDelete.call(this, index, credential, baseUrl, returnData);
 								break;
 							default:
 								throw new NodeApiError(
@@ -563,10 +600,10 @@ export class Craft implements INodeType {
 					case 'document': {
 						switch (operation) {
 							case 'fetch':
-								await documentFetch.call(this, index, credential, documentId, returnData);
+								await documentFetch.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'search':
-								await documentSearch.call(this, index, credential, documentId, returnData);
+								await documentSearch.call(this, index, credential, baseUrl, returnData);
 								break;
 							default:
 								throw new NodeApiError(
@@ -580,15 +617,38 @@ export class Craft implements INodeType {
 					case 'dailyNote': {
 						switch (operation) {
 							case 'search':
-								await dailyNoteSearch.call(this, index, credential, documentId, returnData);
+								await dailyNoteSearch.call(this, index, credential, baseUrl, returnData);
 								break;
 							case 'searchBlocks':
-								await dailyNoteBlockSearch.call(this, index, credential, documentId, returnData);
+								await dailyNoteBlockSearch.call(this, index, credential, baseUrl, returnData);
 								break;
 							default:
 								throw new NodeApiError(
 									this.getNode(),
 									{ message: `Unsupported daily note operation "${operation}".` },
+									{ itemIndex: index },
+								);
+						}
+						continue;
+					}
+					case 'folder': {
+						switch (operation) {
+							case 'list':
+								await folderList.call(this, index, credential, baseUrl, returnData);
+								break;
+							case 'create':
+								await folderCreate.call(this, index, credential, baseUrl, returnData);
+								break;
+							case 'delete':
+								await folderDelete.call(this, index, credential, baseUrl, returnData);
+								break;
+							case 'move':
+								await folderMove.call(this, index, credential, baseUrl, returnData);
+								break;
+							default:
+								throw new NodeApiError(
+									this.getNode(),
+									{ message: `Unsupported folder operation "${operation}".` },
 									{ itemIndex: index },
 								);
 						}
@@ -602,10 +662,14 @@ export class Craft implements INodeType {
 						);
 				}
 			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
+				}
 				throw new NodeApiError(this.getNode(), error, { itemIndex: index });
 			}
 		}
 
-		return [this.helpers.returnJsonArray(returnData)];
+		return [returnData.map((item, i) => ({ json: item, pairedItem: { item: i } }))];
 	}
 }

@@ -6,7 +6,7 @@ export async function collectionGetSchema(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const { collectionId } = getCollectionEndpoint.call(this, index);
@@ -19,7 +19,7 @@ export async function collectionGetSchema(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'GET',
 		endpoint: `/collections/${encodeURIComponent(collectionId)}/schema`,
 		body: {},

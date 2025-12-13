@@ -13,7 +13,7 @@ export async function documentSearch(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const includeRaw = this.getNodeParameter('documentInclude', index) as string;
@@ -38,7 +38,7 @@ export async function documentSearch(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'GET',
 		endpoint: '/documents/search',
 		body: {},

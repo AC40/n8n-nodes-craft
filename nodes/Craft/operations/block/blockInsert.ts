@@ -6,7 +6,7 @@ export async function blockInsert(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const blocksParam = this.getNodeParameter('blocks', index);
@@ -56,7 +56,7 @@ export async function blockInsert(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'POST',
 		endpoint: '/blocks',
 		body: {

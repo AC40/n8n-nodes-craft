@@ -6,7 +6,7 @@ export async function blockMove(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const inputMode = this.getNodeParameter('moveInputMode', index, 'form') as string;
@@ -75,7 +75,7 @@ export async function blockMove(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'PUT',
 		endpoint: '/blocks/move',
 		body: {

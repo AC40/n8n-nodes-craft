@@ -7,7 +7,7 @@ export async function collectionCreate(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const { endpoint: collectionEndpoint } = getCollectionEndpoint.call(this, index);
@@ -30,7 +30,7 @@ export async function collectionCreate(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'POST',
 		endpoint: collectionEndpoint,
 		body,

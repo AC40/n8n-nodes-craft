@@ -6,7 +6,7 @@ export async function blockFetch(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const connectionType = (credential?.connectionType as string) === 'tasks' ? 'tasks' : 'document';
@@ -41,7 +41,7 @@ export async function blockFetch(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'GET',
 		endpoint: '/blocks',
 		body: {},

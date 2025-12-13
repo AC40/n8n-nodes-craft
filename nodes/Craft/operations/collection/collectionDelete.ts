@@ -7,7 +7,7 @@ export async function collectionDelete(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const { endpoint: collectionEndpoint } = getCollectionEndpoint.call(this, index);
@@ -24,7 +24,7 @@ export async function collectionDelete(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'DELETE',
 		endpoint: collectionEndpoint,
 		body: {

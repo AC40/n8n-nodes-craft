@@ -5,7 +5,7 @@ export async function blockUpdate(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const updatedBlocksParam = this.getNodeParameter('updatedBlocks', index);
@@ -13,7 +13,7 @@ export async function blockUpdate(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'PUT',
 		endpoint: '/blocks',
 		body: {

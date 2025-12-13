@@ -7,7 +7,7 @@ export async function collectionUpdate(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const { endpoint: collectionEndpoint } = getCollectionEndpoint.call(this, index);
@@ -32,7 +32,7 @@ export async function collectionUpdate(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'PUT',
 		endpoint: collectionEndpoint,
 		body,

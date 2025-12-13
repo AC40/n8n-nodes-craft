@@ -6,7 +6,7 @@ export async function collectionList(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const { endpoint: collectionEndpoint } = getCollectionEndpoint.call(this, index);
@@ -23,7 +23,7 @@ export async function collectionList(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'GET',
 		endpoint: collectionEndpoint,
 		body: {},

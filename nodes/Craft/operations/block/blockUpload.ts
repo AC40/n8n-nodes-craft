@@ -11,7 +11,7 @@ export async function blockUpload(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const binaryPropertyName = this.getNodeParameter('binaryPropertyName', index) as string;
@@ -42,7 +42,7 @@ export async function blockUpload(
 	const uploadLink = (await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'POST',
 		endpoint: '/upload-link',
 		body: {
@@ -99,7 +99,7 @@ export async function blockUpload(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'POST',
 		endpoint: '/blocks',
 		body: {

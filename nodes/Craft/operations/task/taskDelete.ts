@@ -5,7 +5,7 @@ export async function taskDelete(
 	this: IExecuteFunctions,
 	index: number,
 	credential: ICredentialDataDecryptedObject | null,
-	documentId: string,
+	baseUrl: string,
 	returnData: IDataObject[],
 ): Promise<void> {
 	const taskIds = this.getNodeParameter('taskIds', index) as string | string[];
@@ -16,7 +16,7 @@ export async function taskDelete(
 	const response = await craftApiRequest({
 		_this: this,
 		credential,
-		documentId,
+		baseUrl,
 		method: 'DELETE',
 		endpoint: '/tasks',
 		body,

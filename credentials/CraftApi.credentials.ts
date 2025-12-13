@@ -23,11 +23,35 @@ export class CraftApi implements ICredentialType {
 			displayName: 'Connection Type',
 			name: 'connectionType',
 			type: 'options',
-			default: 'document',
-			description: 'Choose which Craft API this credential targets',
+			default: 'multiDocument',
+			description: 'Choose which Craft API connection type this credential targets',
 			options: [
-				{ name: 'Document API', value: 'document' },
-				{ name: 'Daily Notes & Tasks API', value: 'tasks' },
+				{
+					name: 'Multi-Document Connection',
+					value: 'multiDocument',
+					description: 'Access to multiple selected documents',
+				},
+				{
+					name: 'Daily Notes Connection',
+					value: 'dailyNotes',
+					description: 'Access to daily notes with tasks and collections',
+				},
+				{
+					name: 'Full Space Connection',
+					value: 'fullSpace',
+					description: 'Access to all documents and folders in the space',
+				},
+				// Legacy options for backwards compatibility
+				{
+					name: 'Document API (Legacy)',
+					value: 'document',
+					description: 'Legacy document connection - use Multi-Document instead',
+				},
+				{
+					name: 'Daily Notes & Tasks API (Legacy)',
+					value: 'tasks',
+					description: 'Legacy tasks connection - use Daily Notes instead',
+				},
 			],
 		},
 		{
@@ -53,14 +77,14 @@ export class CraftApi implements ICredentialType {
 			typeOptions: { password: true },
 		},
 		{
-			displayName: 'Connection ID',
-			name: 'documentId',
+			displayName: 'API Base URL',
+			name: 'baseUrl',
 			type: 'string',
 			default: '',
 			required: true,
 			description:
-				'The ID of the connection. Usually an 11-character string between. Found in the url of the connection between "https://connect.craft.do/links/" and "/api/v1.',
-			placeholder: 'e.g.: BxDA9pjUDPf (found in the url of the connection)',
+				'The full base URL of your Craft API connection. Copy this from your Craft API settings, it should end with "/api/v1".',
+			placeholder: 'e.g.: https://connect.craft.do/links/EUs9dtqt7we/api/v1',
 		},
 	];
 
@@ -75,8 +99,8 @@ export class CraftApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: '={{`https://connect.craft.do/links/${$credentials.documentId}/api/v1`}}',
-			url: '/collections',
+			baseURL: '={{$credentials.baseUrl}}',
+			url: '={{ $credentials.connectionType === "dailyNotes" ? "/blocks?date=today" : ($credentials.connectionType === "fullSpace" ? "/folders" : "/documents") }}',
 			method: 'GET',
 		},
 	};

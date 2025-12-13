@@ -11,6 +11,7 @@ import { blockConstructProperties } from './properties/blockConstructProperties'
 import { taskOperationProperty, taskProperties } from './properties/taskProperties';
 import { documentOperationProperty, documentProperties } from './properties/documentProperties';
 import { dailyNoteOperationProperty, dailyNoteProperties } from './properties/dailyNoteProperties';
+import { folderOperationProperty, folderProperties } from './properties/folderProperties';
 
 const resourceProperty: INodeProperties = {
 	displayName: 'Resource',
@@ -22,6 +23,7 @@ const resourceProperty: INodeProperties = {
 		{ name: 'Collection', value: 'collection' },
 		{ name: 'Daily Note', value: 'dailyNote' },
 		{ name: 'Document', value: 'document' },
+		{ name: 'Folder', value: 'folder' },
 		{ name: 'Task', value: 'task' },
 	],
 	default: 'block',
@@ -60,10 +62,12 @@ export const craftProperties: INodeProperties[] = [
 	taskOperationProperty,
 	documentOperationProperty,
 	dailyNoteOperationProperty,
+	folderOperationProperty,
 	...collectionProperties,
 	...taskProperties,
 	...documentProperties,
 	...dailyNoteProperties,
+	...folderProperties,
 	...blockFetchProperties,
 	...blockMutationProperties,
 	...blockUploadProperties,
