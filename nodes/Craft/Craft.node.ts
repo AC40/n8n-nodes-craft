@@ -147,8 +147,8 @@ type ConnectionMode = 'dailyNotes' | 'multiDocument' | 'fullSpace';
 // Define which resources are available for each connection type
 const CONNECTION_RESOURCES: Record<ConnectionMode, Set<string>> = {
 	dailyNotes: new Set(['block', 'task', 'collection', 'dailyNote']),
-	multiDocument: new Set(['block', 'document', 'collection']),
-	fullSpace: new Set(['block', 'document', 'collection', 'folder']),
+	multiDocument: new Set(['block', 'document', 'collection', 'task']),
+	fullSpace: new Set(['block', 'document', 'collection', 'folder', 'task']),
 };
 
 const WRITE_ONLY_ALLOWED: Record<ConnectionMode, Record<string, Set<string>>> = {
@@ -162,12 +162,14 @@ const WRITE_ONLY_ALLOWED: Record<ConnectionMode, Record<string, Set<string>>> = 
 		block: new Set(['insert']),
 		document: new Set(['fetch']),
 		collection: new Set(['list', 'create']),
+		task: new Set(['create']),
 	},
 	fullSpace: {
 		block: new Set(['insert']),
 		document: new Set(['fetch']),
 		collection: new Set(['list', 'create']),
 		folder: new Set(['list', 'create']),
+		task: new Set(['create']),
 	},
 };
 
